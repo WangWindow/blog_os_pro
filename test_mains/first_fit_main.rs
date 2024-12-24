@@ -36,30 +36,6 @@ fn kernel_main(boot_info: &'static BootInfo) -> ! {
         ALLOCATOR.lock().print_free_regions();
     }
 
-    // 测试分配
-    // println!("\nAllocating some memory...");
-    // // let n1 = Box::new(41);
-    // // let n2 = Box::new(13);
-    // // // let mut vec = Vec::new();
-    // // // for i in 0..50 {
-    // // //     vec.push(i);
-    // // // }
-
-    // // 打印分配后的空闲区域
-    // unsafe {
-    //     ALLOCATOR.lock().print_free_regions();
-    // }
-
-    // // 释放内存
-    // println!("\nFreeing memory...");
-    // drop(n1);
-    // drop(n2);
-    // // drop(vec);
-
-    // 打印释放后的空闲区域
-    // unsafe {
-    //     ALLOCATOR.lock().print_free_regions();
-    // }
 
     println!("\nTesting memory allocation and merging...");
     
