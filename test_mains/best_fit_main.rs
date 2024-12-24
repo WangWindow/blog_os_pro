@@ -30,8 +30,8 @@ fn kernel_main(boot_info: &'static BootInfo) -> ! {
 
     allocator::init_heap(&mut mapper, &mut frame_allocator).expect("heap initialization failed");
 
-    println!("\n测试最佳适应算法:");
-    println!("步骤1: 分配多个不同大小的块以创建碎片");
+    println!("\nTesting best fit algorithm:");
+    println!("Step 1: Allocate multiple blocks of different sizes to create fragmentation");
 
     // 创建多个不同大小的分配请求
     let layouts = [
@@ -45,25 +45,25 @@ fn kernel_main(boot_info: &'static BootInfo) -> ! {
     let mut ptrs = Vec::new();
     for (i, layout) in layouts.iter().enumerate() {
         let ptr = unsafe { ALLOCATOR.alloc(layout.clone()) };
-        println!("\n分配第{}个块 (大小: {} bytes):", i + 1, layout.size());
+        println!("\nAllocating block {} (size: {} bytes):", i + 1, layout.size());
         unsafe {
             ALLOCATOR.lock().print_free_regions();
         }
         ptrs.push((ptr, layout));
     }
-    println!("okokokok");
-    println!("\n步骤2: 释放一些块来创建不同大小的空闲区");
+    
+    println!("\nStep 2: Deallocate some blocks to create free regions of different sizes");
     // 释放一些块以创建空闲空间
     unsafe {
         ALLOCATOR.dealloc(ptrs[1].0, *ptrs[1].1); // 释放5000字节
         ALLOCATOR.dealloc(ptrs[3].0, *ptrs[3].1); // 释放3000字节
     }
-    println!("\n释放后的空闲区域:");
+    println!("\nFree regions after deallocation:");
     unsafe {
         ALLOCATOR.lock().print_free_regions();
     }
 
-    println!("\n步骤3: 测试最佳适应 - 分配一些特定大小的块");
+    println!("\nStep 3: Test best fit - Allocate some blocks of specific sizes");
     // 尝试分配特定大小的块以测试最佳适应
     let test_layouts = [
         Layout::from_size_align(2800, 8).unwrap(), // 应该使用3000的空闲块
@@ -74,14 +74,14 @@ fn kernel_main(boot_info: &'static BootInfo) -> ! {
     let mut test_ptrs = Vec::new();
     for (i, layout) in test_layouts.iter().enumerate() {
         let ptr = unsafe { ALLOCATOR.alloc(layout.clone()) };
-        println!("\n分配测试块{} (大小: {} bytes):", i + 1, layout.size());
+        println!("\nAllocating test block {} (size: {} bytes):", i + 1, layout.size());
         unsafe {
             ALLOCATOR.lock().print_free_regions();
         }
         test_ptrs.push((ptr, layout));
     }
 
-    println!("\n步骤4: 清理所有分配");
+    println!("\nStep 4: Clean up all allocations");
     // 释放所有剩余的块
     for (ptr, layout) in ptrs.iter().chain(test_ptrs.iter()) {
         if !(*ptr).is_null() {
@@ -90,7 +90,7 @@ fn kernel_main(boot_info: &'static BootInfo) -> ! {
             }
         }
     }
-    println!("\n清理后的状态:");
+    println!("\nState after cleanup:");
     unsafe {
         ALLOCATOR.lock().print_free_regions();
     }
