@@ -10,16 +10,25 @@ pub mod executor;
 pub mod keyboard;
 pub mod simple_executor;
 
+#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
+pub enum Priority {
+    Low = 0,
+    Normal = 1,
+    High = 2,
+}
+
 pub struct Task {
     id: TaskId,
     future: Pin<Box<dyn Future<Output = ()>>>,
+    priority: Priority,
 }
 
 impl Task {
-    pub fn new(future: impl Future<Output = ()> + 'static) -> Task {
+    pub fn new(future: impl Future<Output = ()> + 'static, priority: Priority) -> Task {
         Task {
             id: TaskId::new(),
             future: Box::pin(future),
+            priority,
         }
     }
 

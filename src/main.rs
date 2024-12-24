@@ -7,7 +7,7 @@
 extern crate alloc;
 
 use blog_os::println;
-use blog_os::task::{executor::Executor, keyboard, Task};
+use blog_os::task::{executor::Executor, keyboard, Priority, Task};
 use bootloader::{entry_point, BootInfo};
 use core::panic::PanicInfo;
 
@@ -30,9 +30,38 @@ fn kernel_main(boot_info: &'static BootInfo) -> ! {
     #[cfg(test)]
     test_main();
 
+    // 创建执行器
     let mut executor = Executor::new();
-    executor.spawn(Task::new(example_task()));
-    executor.spawn(Task::new(keyboard::print_keypresses()));
+
+    // 创建不同优先级的任务
+    executor.spawn(Task::new(
+        example_task("Task1: Hign Priority"),
+        Priority::High,
+    ));
+    executor.spawn(Task::new(
+        example_task("Task2: Normal Priority"),
+        Priority::Normal,
+    ));
+    executor.spawn(Task::new(
+        example_task("Task3: Low Priority "),
+        Priority::Low,
+    ));
+
+    executor.spawn(Task::new(
+        example_task("Task4: Low Priority "),
+        Priority::Low,
+    ));
+
+    executor.spawn(Task::new(
+        example_task("Task5: Low Priority "),
+        Priority::Low,
+    ));
+
+    // 启动键盘中断处理任务
+    executor.spawn(Task::new(keyboard::print_keypresses(), Priority::Low));
+
+
+    // 运行执行器
     executor.run();
 }
 
@@ -50,16 +79,16 @@ fn panic(info: &PanicInfo) -> ! {
     blog_os::test_panic_handler(info)
 }
 
-async fn async_number() -> u32 {
-    42
-}
-
-async fn example_task() {
-    let number = async_number().await;
-    println!("async number: {}", number);
-}
-
 #[test_case]
 fn trivial_assertion() {
     assert_eq!(1, 1);
+}
+
+// 一个简单的异步任务
+async fn example_task(id: &str) {
+    println!("Task {} start", id);
+    for i in 0..3 {
+        println!("Task {} step {}", id, i);
+    }
+    println!("Task {} down", id);
 }
