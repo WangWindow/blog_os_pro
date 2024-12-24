@@ -2,11 +2,20 @@ use super::{Task, TaskId};
 use alloc::{collections::BTreeMap, sync::Arc, task::Wake};
 use core::task::{Context, Poll, Waker};
 use crossbeam_queue::ArrayQueue;
-
+use crossbeam_queue::SegQueue;
 pub struct Executor {
     tasks: BTreeMap<TaskId, Task>,
     task_queue: Arc<ArrayQueue<TaskId>>,
     waker_cache: BTreeMap<TaskId, Waker>,
+    new_tasks: Arc<SegQueue<Task>>,
+}
+pub struct Spawner {
+    new_tasks: Arc<SegQueue<Task>>,
+}
+impl Spawner {
+    pub fn spawn(&self, task: Task) {
+        self.new_tasks.push(task);
+    }
 }
 
 impl Executor {
@@ -15,9 +24,14 @@ impl Executor {
             tasks: BTreeMap::new(),
             task_queue: Arc::new(ArrayQueue::new(100)),
             waker_cache: BTreeMap::new(),
+            new_tasks: Arc::new(SegQueue::new()),
         }
     }
-
+    pub fn spawner(&self) -> Spawner {
+        Spawner {
+            new_tasks: self.new_tasks.clone(),
+        }
+    }
     pub fn spawn(&mut self, task: Task) {
         let task_id = task.id;
         if self.tasks.insert(task.id, task).is_some() {
@@ -28,6 +42,14 @@ impl Executor {
 
     pub fn run(&mut self) -> ! {
         loop {
+            // 将新任务加入任务列表
+            while let Some(task) = self.new_tasks.pop() {
+                let task_id = task.id;
+                if self.tasks.insert(task_id, task).is_some() {
+                    panic!("task with same ID already in tasks");
+                }
+                self.task_queue.push(task_id).expect("queue full");
+            }
             self.run_ready_tasks();
             self.sleep_if_idle();
         }
@@ -39,6 +61,7 @@ impl Executor {
             tasks,
             task_queue,
             waker_cache,
+            new_tasks,
         } = self;
 
         while let Some(task_id) = task_queue.pop() {
