@@ -14,6 +14,7 @@ pub mod linked_list;
 pub mod first_fit;
 pub mod next_fit;
 pub mod best_fit;
+pub mod worst_fit;
 
 unsafe impl Send for next_fit::NextFitAllocator {}
 unsafe impl Sync for next_fit::NextFitAllocator {}
@@ -22,7 +23,7 @@ pub const HEAP_START: usize = 0x_4444_4444_0000;
 pub const HEAP_SIZE: usize = 100 * 1024; // 100 KiB
 
 #[global_allocator]
-pub static ALLOCATOR: Locked<best_fit::BestFitAllocator> = Locked::new(best_fit::BestFitAllocator::new());
+pub static ALLOCATOR: Locked<worst_fit::WorstFitAllocator> = Locked::new(worst_fit::WorstFitAllocator::new());
 
 pub fn init_heap(
     mapper: &mut impl Mapper<Size4KiB>,
