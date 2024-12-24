@@ -23,17 +23,20 @@ impl ListNode {
     }
 }
 
+/// 首次适配分配器
 pub struct FirstFitAllocator {
     head: ListNode,
 }
 
 impl FirstFitAllocator {
+    /// 创建一个新的 FirstFitAllocator 实例
     pub const fn new() -> Self {
         Self {
             head: ListNode::new(0),
         }
     }
 
+    /// 初始化堆区域
     pub fn init(&mut self, heap_start: usize, heap_size: usize) {
         let mut node = ListNode::new(heap_size);
         node.next = self.head.next.take();
@@ -43,6 +46,7 @@ impl FirstFitAllocator {
         }
     }
 
+    /// 查找合适的空闲区域
     fn find_region(&mut self, size: usize, align: usize) -> Option<(&'static mut ListNode, usize)> {
         let mut current = &mut self.head;
 
@@ -58,6 +62,7 @@ impl FirstFitAllocator {
         None
     }
 
+    /// 从区域中分配内存
     fn alloc_from_region(region: &ListNode, size: usize, align: usize) -> Result<usize, ()> {
         let alloc_start = align_up(region.start_addr(), align);
         let alloc_end = alloc_start.checked_add(size).ok_or(())?;
@@ -69,6 +74,7 @@ impl FirstFitAllocator {
         Ok(alloc_start)
     }
 
+    /// 添加一个空闲区域
     fn add_free_region(&mut self, addr: usize, size: usize) {
         let mut current = &mut self.head;
         let new_node = ListNode::new(size);
@@ -120,6 +126,7 @@ impl FirstFitAllocator {
         current.next = Some(unsafe { &mut *(addr as *mut ListNode) });
     }
 
+    /// 打印当前的空闲区域
     pub fn print_free_regions(&self) {
         let mut current = &self.head;
         println!("Free regions:");
@@ -131,6 +138,16 @@ impl FirstFitAllocator {
             );
             current = region;
         }
+    }
+
+    /// 计算大小和对齐
+    fn size_align(layout: Layout) -> (usize, usize) {
+        let layout = layout
+            .align_to(mem::align_of::<ListNode>())
+            .expect("adjusting alignment failed")
+            .pad_to_align();
+        let size = layout.size().max(mem::size_of::<ListNode>());
+        (size, layout.align())
     }
 }
 
@@ -154,16 +171,5 @@ unsafe impl GlobalAlloc for Locked<FirstFitAllocator> {
     unsafe fn dealloc(&self, ptr: *mut u8, layout: Layout) {
         let (size, _) = FirstFitAllocator::size_align(layout);
         self.lock().add_free_region(ptr as usize, size)
-    }
-}
-
-impl FirstFitAllocator {
-    fn size_align(layout: Layout) -> (usize, usize) {
-        let layout = layout
-            .align_to(mem::align_of::<ListNode>())
-            .expect("adjusting alignment failed")
-            .pad_to_align();
-        let size = layout.size().max(mem::size_of::<ListNode>());
-        (size, layout.align())
     }
 }

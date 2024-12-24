@@ -1,4 +1,3 @@
-
 use super::{align_up, Locked};
 use crate::println;
 use alloc::alloc::{GlobalAlloc, Layout};
@@ -23,17 +22,20 @@ impl ListNode {
     }
 }
 
+/// 最坏适配分配器
 pub struct WorstFitAllocator {
     head: ListNode,
 }
 
 impl WorstFitAllocator {
+    /// 创建一个新的 WorstFitAllocator 实例
     pub const fn new() -> Self {
         Self {
             head: ListNode::new(0),
         }
     }
 
+    /// 初始化堆区域
     pub fn init(&mut self, heap_start: usize, heap_size: usize) {
         let mut node = ListNode::new(heap_size);
         node.next = self.head.next.take();
@@ -43,6 +45,7 @@ impl WorstFitAllocator {
         }
     }
 
+    /// 查找最适合的空闲区域
     fn find_worst_fit(&mut self, size: usize, align: usize) -> Option<(&'static mut ListNode, usize)> {
         let mut current = &mut self.head;
         let mut worst_region: Option<(*mut ListNode, usize)> = None;
@@ -72,6 +75,7 @@ impl WorstFitAllocator {
         }
     }
 
+    /// 从区域中分配内存
     fn alloc_from_region(region: &ListNode, size: usize, align: usize) -> Result<usize, ()> {
         let alloc_start = align_up(region.start_addr(), align);
         let alloc_end = alloc_start.checked_add(size).ok_or(())?;
@@ -83,6 +87,7 @@ impl WorstFitAllocator {
         Ok(alloc_start)
     }
 
+    /// 添加一个空闲区域
     fn add_free_region(&mut self, addr: usize, size: usize) {
         let mut current = &mut self.head;
         let new_node = ListNode::new(size);
@@ -128,6 +133,7 @@ impl WorstFitAllocator {
         current.next = Some(unsafe { &mut *(addr as *mut ListNode) });
     }
 
+    /// 打印当前的空闲区域
     pub fn print_free_regions(&self) {
         let mut current = &self.head;
         println!("Free regions (Worst Fit):");
@@ -147,6 +153,7 @@ impl WorstFitAllocator {
         println!("  Total: {} regions, {} bytes free", count, total_free);
     }
 
+    /// 计算大小和对齐
     fn size_align(layout: Layout) -> (usize, usize) {
         let layout = layout
             .align_to(mem::align_of::<ListNode>())

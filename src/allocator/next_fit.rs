@@ -23,12 +23,14 @@ impl ListNode {
     }
 }
 
+/// 下一个适配分配器
 pub struct NextFitAllocator {
     head: ListNode,
     last_pos: Option<*mut ListNode>,
 }
 
 impl NextFitAllocator {
+    /// 创建一个新的 NextFitAllocator 实例
     pub const fn new() -> Self {
         Self {
             head: ListNode::new(0),
@@ -36,6 +38,7 @@ impl NextFitAllocator {
         }
     }
 
+    /// 初始化堆区域
     pub fn init(&mut self, heap_start: usize, heap_size: usize) {
         let mut node = ListNode::new(heap_size);
         node.next = self.head.next.take();
@@ -47,6 +50,7 @@ impl NextFitAllocator {
         self.last_pos = Some(node_ptr);
     }
 
+    /// 查找合适的空闲区域
     fn find_region(&mut self, size: usize, align: usize) -> Option<(&'static mut ListNode, usize)> {
         let mut start = match self.last_pos {
             Some(pos) => unsafe { &mut *pos },
@@ -97,6 +101,7 @@ impl NextFitAllocator {
         None
     }
 
+    /// 从区域中分配内存
     fn alloc_from_region(region: &ListNode, size: usize, align: usize) -> Result<usize, ()> {
         let alloc_start = align_up(region.start_addr(), align);
         let alloc_end = alloc_start.checked_add(size).ok_or(())?;
@@ -108,6 +113,7 @@ impl NextFitAllocator {
         Ok(alloc_start)
     }
 
+    /// 添加一个空闲区域
     fn add_free_region(&mut self, addr: usize, size: usize) {
         // 与现有的 FirstFitAllocator 合并逻辑相同
         let mut current = &mut self.head;
@@ -159,6 +165,7 @@ impl NextFitAllocator {
         current.next = Some(unsafe { &mut *(addr as *mut ListNode) });
     }
 
+    /// 打印当前的空闲区域
     pub fn print_free_regions(&self) {
         let mut current = &self.head;
         println!("Free regions (Next Fit):");
@@ -180,9 +187,8 @@ impl NextFitAllocator {
             current = region;
         }
     }
-}
 
-impl NextFitAllocator {
+    /// 计算大小和对齐
     fn size_align(layout: Layout) -> (usize, usize) {
         let layout = layout
             .align_to(mem::align_of::<ListNode>())
