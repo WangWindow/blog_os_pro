@@ -1,6 +1,8 @@
 # OS! (基于 Blog OS 的模块实验创新)
 
-Hi, we're OS! team. Nice to meet you!🫡
+Hi, we're OS! team. Nice to meet you! 😊
+
+# 这是项目的 main 分支，仅作为引导和展示，在开始前请先阅读完此Readme，具体实验请移步其他分支(链接将在下面部分给出)🫡
 
 ## 一、队伍简介 (选题及成员等)
 | 项目     | 内容                   |
