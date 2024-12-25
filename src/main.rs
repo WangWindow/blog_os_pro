@@ -35,7 +35,7 @@ fn kernel_main(boot_info: &'static BootInfo) -> ! {
 
     // 创建不同优先级的任务
     executor.spawn(Task::new(
-        example_task("Task1: Hign Priority"),
+        example_task("Task1: Highh Priority"),
         Priority::High,
     ));
     executor.spawn(Task::new(
@@ -48,18 +48,17 @@ fn kernel_main(boot_info: &'static BootInfo) -> ! {
     ));
 
     executor.spawn(Task::new(
-        example_task("Task4: Low Priority "),
-        Priority::Low,
+        example_task("Task4: Normal Priority "),
+        Priority::Normal,
     ));
 
     executor.spawn(Task::new(
-        example_task("Task5: Low Priority "),
-        Priority::Low,
+        example_task("Task5: High Priority "),
+        Priority::High,
     ));
 
     // 启动键盘中断处理任务
-    executor.spawn(Task::new(keyboard::print_keypresses(), Priority::Low));
-
+    // executor.spawn(Task::new(keyboard::print_keypresses(), Priority::Low));
 
     // 运行执行器
     executor.run();

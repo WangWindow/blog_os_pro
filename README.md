@@ -10,43 +10,15 @@
 | 指导老师   | 田卫东、周红鹃     |
 
 ## 对项目完成情况做一个介绍
-
+本部分由 王卫东 完成
 
 ## PDF文档和其他过程性材料链接
-[材料1]()
+[材料1](Guidelines/Ex1.pdf)
 
 ## 代码的参考情况
 [https://github.com/phil-opp/blog_os/tree/post-12](https://github.com/phil-opp/blog_os/tree/post-12)
 
-## Building
-
-This project requires a nightly version of Rust because it uses some unstable features. At least nightly _2020-07-15_ is required for building. You might need to run `rustup update nightly --force` to update to the latest nightly even if some components such as `rustfmt` are missing it.
-
-You can build the project by running:
-
-```
-cargo build
-```
-
-To create a bootable disk image from the compiled kernel, you need to install the [`bootimage`] tool:
-
-[`bootimage`]: https://github.com/rust-osdev/bootimage
-
-```
-cargo install bootimage
-```
-
-After installing, you can create the bootable disk image by running:
-
-```
-cargo bootimage
-```
-
-This creates a bootable disk image in the `target/x86_64-blog_os/debug` directory.
-
-Please file an issue if you have any problems.
-
-## Running
+## 运行(请先按照 main 分支的 Readme 中的步骤安装实验环境)
 
 You can run the disk image in [QEMU] through:
 
@@ -56,14 +28,6 @@ You can run the disk image in [QEMU] through:
 cargo run
 ```
 
-[QEMU] and the [`bootimage`] tool need to be installed for this.
-
-## Testing
-
-To run the unit and integration tests, execute `cargo xtest`.
-
 ## License
 
 - MIT license ([LICENSE](LICENSE) or http://opensource.org/licenses/MIT)
-
-### Contribution
