@@ -23,7 +23,7 @@ Hi, we're OS! team. Nice to meet you! 😊
 ### [1. Ex1](https://gitlab.eduxiji.net/T202419359994461/project2608132-275359/-/tree/ex1) (简单任务调度及优先队列算法)
 
 
-### [2. Ex2](https://gitlab.eduxiji.net/T202419359994461/project2608132-275359/-/tree/ex2) (任务生成优化)
+### [2. Ex2](https://gitlab.eduxiji.net/T202419359994461/project2608132-275359/-/tree/ex2) (任务生成和运行优化)
 
 
 ### [3. Ex3](https://gitlab.eduxiji.net/T202419359994461/project2608132-275359/-/tree/ex3) (常见内存分配算法)
