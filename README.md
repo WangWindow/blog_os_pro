@@ -12,41 +12,22 @@
 ## 对项目完成情况做一个介绍
 本部分由 胡子龙 完成
 
+完成 首次适应、循环首次适应、最佳适应、最坏适应内存分配算法
+
+其中首次适应算法的文档在下方给出，其他算法与首次适应算法实现类似，不再赘述，作为思考题或拓展题留给读者自己思考。
+
+算法测试使用的 main 函数位于 test_mains 文件夹下，测试对应算法需要将相应测试main文件加入src文件夹下(并改名为main.rs，已覆盖原有的main.rs)
+此外，还需要将 src/allocator.rs 中的以下部分替换为对应的分配器(参考下面的图片)
+
+![alt text](image.png)
+
 ## PDF文档和其他过程性材料链接
-[材料1]()
+[材料1](Guidelines/Ex3.pdf)
 
 ## 代码的参考情况
 [https://github.com/phil-opp/blog_os/tree/post-12](https://github.com/phil-opp/blog_os/tree/post-12)
 
-## Building
-
-This project requires a nightly version of Rust because it uses some unstable features. At least nightly _2020-07-15_ is required for building. You might need to run `rustup update nightly --force` to update to the latest nightly even if some components such as `rustfmt` are missing it.
-
-You can build the project by running:
-
-```
-cargo build
-```
-
-To create a bootable disk image from the compiled kernel, you need to install the [`bootimage`] tool:
-
-[`bootimage`]: https://github.com/rust-osdev/bootimage
-
-```
-cargo install bootimage
-```
-
-After installing, you can create the bootable disk image by running:
-
-```
-cargo bootimage
-```
-
-This creates a bootable disk image in the `target/x86_64-blog_os/debug` directory.
-
-Please file an issue if you have any problems.
-
-## Running
+## 运行(请按照 main 分支 Readme 中的描述搭建实验环境)
 
 You can run the disk image in [QEMU] through:
 
@@ -58,12 +39,6 @@ cargo run
 
 [QEMU] and the [`bootimage`] tool need to be installed for this.
 
-## Testing
-
-To run the unit and integration tests, execute `cargo xtest`.
-
 ## License
 
 - MIT license ([LICENSE](LICENSE) or http://opensource.org/licenses/MIT)
-
-### Contribution
