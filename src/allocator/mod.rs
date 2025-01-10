@@ -18,6 +18,7 @@ pub const HEAP_SIZE: usize = 100 * 1024; // 100 KiB
 #[global_allocator]
 static ALLOCATOR: Locked<FixedSizeBlockAllocator> = Locked::new(FixedSizeBlockAllocator::new());
 
+/// 初始化堆
 pub fn init_heap(
     mapper: &mut impl Mapper<Size4KiB>,
     frame_allocator: &mut impl FrameAllocator<Size4KiB>,
@@ -77,6 +78,7 @@ impl<A> Locked<A> {
 /// Align the given address `addr` upwards to alignment `align`.
 ///
 /// Requires that `align` is a power of two.
+/// 使给定地址`addr`向上对齐到对齐`align`。
 fn align_up(addr: usize, align: usize) -> usize {
     (addr + align - 1) & !(align - 1)
 }

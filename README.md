@@ -33,10 +33,10 @@
 
 
 ### 1. Linux or WSL: Ubuntu 24.04
-- ![alt text](Assets/system_info.png)
+- ![alt text](assets/system_info.png)
 
 ### 2. Rust-Toolchain: nightly-2024-12-19-x86_64-unknown-linux-gnu
-- ![alt text](Assets/rust_toolchain.png)
+- ![alt text](assets/rust_toolchain.png)
 - *!!! 请先安装rust !!!*
 ```
 sudo apt update
@@ -60,7 +60,7 @@ rustup default nightly
 rustc --version
 ```
 结果应当如下：
-![alt text](Assets/rustc.png)
+![alt text](assets/rustc.png)
 
 接下来安装
 ```
@@ -71,7 +71,7 @@ cargo install cargo-binutils cargo-xbuild bootimage
 
 
 ### 3. Qemu
-![alt text](Assets/qemu.png)
+![alt text](assets/qemu.png)
 ```
 sudo apt install qemu-system
 ```
@@ -92,34 +92,9 @@ sudo apt install qemu-system
 ## 六、代码的参考情况
 基于 Blog OS: [https://github.com/phil-opp/blog_os/tree/post-12](https://github.com/phil-opp/blog_os/tree/post-12)
 
-## [ *以下为 Blog OS 的 README.md 中的描述（供参考）*]
 ## Building
 
 This project requires a nightly version of Rust because it uses some unstable features. At least nightly _2020-07-15_ is required for building. You might need to run `rustup update nightly --force` to update to the latest nightly even if some components such as `rustfmt` are missing it.
-
-You can build the project by running:
-
-```
-cargo build
-```
-
-To create a bootable disk image from the compiled kernel, you need to install the [`bootimage`] tool:
-
-[`bootimage`]: https://github.com/rust-osdev/bootimage
-
-```
-cargo install bootimage
-```
-
-After installing, you can create the bootable disk image by running:
-
-```
-cargo bootimage
-```
-
-This creates a bootable disk image in the `target/x86_64-blog_os/debug` directory.
-
-Please file an issue if you have any problems.
 
 ## Running
 
@@ -133,9 +108,6 @@ cargo run
 
 [QEMU] and the [`bootimage`] tool need to be installed for this.
 
-## Testing
-
-To run the unit and integration tests, execute `cargo xtest`.
 
 ## License
 

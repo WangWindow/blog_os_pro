@@ -8,17 +8,25 @@
 
 extern crate alloc;
 use core::panic::PanicInfo;
+use lazy_static::lazy_static;
+use spin::Mutex;
+
+pub const BUFFER_HEIGHT: usize = 25;
+
+lazy_static! {
+    pub static ref FILESYSTEM: Mutex<fs::FileSystem> = Mutex::new(fs::FileSystem::new());
+}
 
 pub mod allocator;
-pub mod gdt;
+pub mod boot;
+pub mod devices;
+pub mod fs;
 pub mod interrupts;
-pub mod memory;
-pub mod serial;
+pub mod mm;
 pub mod task;
-pub mod vga_buffer;
 
 pub fn init() {
-    gdt::init();
+    boot::gdt::init();
     interrupts::init_idt();
     unsafe { interrupts::PICS.lock().initialize() };
     x86_64::instructions::interrupts::enable();

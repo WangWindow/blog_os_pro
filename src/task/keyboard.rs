@@ -1,3 +1,4 @@
+use crate::task::shell::Shell;
 use crate::{print, println};
 use conquer_once::spin::OnceCell;
 use core::{
@@ -66,6 +67,7 @@ impl Stream for ScancodeStream {
     }
 }
 
+// 打印键盘输入
 pub async fn print_keypresses() {
     let mut scancodes = ScancodeStream::new();
     let mut keyboard = Keyboard::new(
@@ -73,15 +75,34 @@ pub async fn print_keypresses() {
         layouts::Us104Key,
         HandleControl::Ignore,
     );
+    let mut shell = Shell::new();
+
+    print!("blog_os> "); // 初始提示符
 
     while let Some(scancode) = scancodes.next().await {
         if let Ok(Some(key_event)) = keyboard.add_byte(scancode) {
             if let Some(key) = keyboard.process_keyevent(key_event) {
-                match key {
-                    DecodedKey::Unicode(character) => print!("{}", character),
-                    DecodedKey::RawKey(key) => print!("{:?}", key),
-                }
+                shell.handle_key(key);
             }
         }
     }
 }
+// pub async fn print_keypresses() {
+//     let mut scancodes = ScancodeStream::new();
+//     let mut keyboard = Keyboard::new(
+//         ScancodeSet1::new(),
+//         layouts::Us104Key,
+//         HandleControl::Ignore,
+//     );
+
+//     while let Some(scancode) = scancodes.next().await {
+//         if let Ok(Some(key_event)) = keyboard.add_byte(scancode) {
+//             if let Some(key) = keyboard.process_keyevent(key_event) {
+//                 match key {
+//                     DecodedKey::Unicode(character) => print!("{}", character),
+//                     DecodedKey::RawKey(key) => print!("{:?}", key),
+//                 }
+//             }
+//         }
+//     }
+// }

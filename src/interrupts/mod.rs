@@ -1,4 +1,4 @@
-use crate::{gdt, hlt_loop, print, println};
+use crate::{boot::gdt, hlt_loop, print, println};
 use lazy_static::lazy_static;
 use pic8259::ChainedPics;
 use spin;
@@ -24,6 +24,7 @@ impl InterruptIndex {
     }
 }
 
+// PIC: Programmable Interrupt Controller
 pub static PICS: spin::Mutex<ChainedPics> =
     spin::Mutex::new(unsafe { ChainedPics::new(PIC_1_OFFSET, PIC_2_OFFSET) });
 
@@ -43,14 +44,17 @@ lazy_static! {
     };
 }
 
+// 初始化中断描述符表
 pub fn init_idt() {
     IDT.load();
 }
 
+// 断点异常处理函数
 extern "x86-interrupt" fn breakpoint_handler(stack_frame: InterruptStackFrame) {
     println!("EXCEPTION: BREAKPOINT\n{:#?}", stack_frame);
 }
 
+// 缺页异常处理函数
 extern "x86-interrupt" fn page_fault_handler(
     stack_frame: InterruptStackFrame,
     error_code: PageFaultErrorCode,
@@ -64,6 +68,7 @@ extern "x86-interrupt" fn page_fault_handler(
     hlt_loop();
 }
 
+// 双重错误处理函数
 extern "x86-interrupt" fn double_fault_handler(
     stack_frame: InterruptStackFrame,
     _error_code: u64,
@@ -71,14 +76,16 @@ extern "x86-interrupt" fn double_fault_handler(
     panic!("EXCEPTION: DOUBLE FAULT\n{:#?}", stack_frame);
 }
 
+// 定时器中断处理函数
 extern "x86-interrupt" fn timer_interrupt_handler(_stack_frame: InterruptStackFrame) {
-    print!(".");
+    // print!(".");
     unsafe {
         PICS.lock()
             .notify_end_of_interrupt(InterruptIndex::Timer.as_u8());
     }
 }
 
+// 键盘中断处理函数
 extern "x86-interrupt" fn keyboard_interrupt_handler(_stack_frame: InterruptStackFrame) {
     use x86_64::instructions::port::Port;
 

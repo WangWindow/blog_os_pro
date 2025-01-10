@@ -15,7 +15,7 @@ entry_point!(main);
 
 fn main(boot_info: &'static BootInfo) -> ! {
     use blog_os::allocator;
-    use blog_os::memory::{self, BootInfoFrameAllocator};
+    use blog_os::mm::memory::{self, BootInfoFrameAllocator};
     use x86_64::VirtAddr;
 
     blog_os::init();
