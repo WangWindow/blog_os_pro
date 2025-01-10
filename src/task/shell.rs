@@ -1,36 +1,111 @@
+use crate::devices::vga_buffer::WRITER;
+use core::fmt::Write;
 use crate::{print, println};
 use alloc::{string::String, vec::Vec};
-use pc_keyboard::DecodedKey;
+use pc_keyboard::{DecodedKey, KeyCode};
 
+/// Struct of the shell
+///
+/// Shell 结构体
 pub struct Shell {
-    input_buffer: String,
-    prompt: &'static str,
+    input_buffer: String,   // 输入缓冲区
+    prompt: &'static str,   // 提示符
+    cursor_position: usize, // 光标位置
 }
 
 impl Shell {
+    /// Create a new shell
+    ///
+    /// 创建一个新的 shell
     pub fn new() -> Self {
         Shell {
             input_buffer: String::new(),
             prompt: "blog_os> ",
+            cursor_position: 0,
         }
     }
 
+    /// Handle a key press
+    ///
+    /// 处理按键
     pub fn handle_key(&mut self, key: DecodedKey) {
         match key {
             DecodedKey::Unicode(c) => {
                 if c == '\n' {
                     self.execute_command();
                     self.input_buffer.clear();
+                    self.cursor_position = 0;
                     print!("{}", self.prompt);
                 } else {
-                    print!("{}", c);
-                    self.input_buffer.push(c);
+                    // 在光标位置插入字符
+                    self.input_buffer.insert(self.cursor_position, c);
+                    self.cursor_position += 1;
+                    self.redraw_line();
                 }
             }
-            _ => {}
+            DecodedKey::RawKey(key) => match key {
+                KeyCode::ArrowLeft => {
+                    if self.cursor_position > 0 {
+                        self.cursor_position -= 1;
+                        self.redraw_line();
+                    }
+                }
+                KeyCode::ArrowRight => {
+                    if self.cursor_position < self.input_buffer.len() {
+                        self.cursor_position += 1;
+                        self.redraw_line();
+                    }
+                }
+                KeyCode::Backspace => {
+                    if self.cursor_position > 0 {
+                        self.input_buffer.remove(self.cursor_position - 1);
+                        self.cursor_position -= 1;
+                        self.redraw_line();
+                    }
+                }
+                KeyCode::Delete => {
+                    if self.cursor_position < self.input_buffer.len() {
+                        self.input_buffer.remove(self.cursor_position);
+                        self.redraw_line();
+                    }
+                }
+                _ => {}
+            },
         }
     }
 
+    /// Redraw the current line
+    ///
+    /// 重绘当前行
+    fn redraw_line(&self) {
+        let mut writer = WRITER.lock();
+        let row = writer.get_row();
+        writer.set_column(0);
+
+        // 清除当前行
+        for _ in 0..80 {
+            write!(writer, " ").unwrap();
+        }
+        writer.set_column(0);
+
+        // 重绘提示符和输入内容
+        write!(writer, "{}{}", self.prompt, self.input_buffer).unwrap();
+
+        // 计算并设置光标位置
+        let prompt_len = self.prompt.len();
+        let cursor_column = prompt_len + self.cursor_position;
+        writer.set_column(cursor_column);
+
+        // 在光标位置显示空格
+        write!(writer, " ").unwrap();
+
+        // 恢复光标位置
+        writer.set_column(cursor_column);
+    }
+
+    /// Execute the command in the input buffer
+    ///
+    /// 执行输入缓冲区中的命令
     fn execute_command(&self) {
         println!();
         let args: Vec<&str> = self.input_buffer.split_whitespace().collect();
@@ -48,6 +123,9 @@ impl Shell {
         }
     }
 
+    /// Print the help message
+    ///
+    /// 打印帮助信息
     fn cmd_help(&self) {
         println!("Available commands:");
         println!("help: Print this help message");
@@ -57,6 +135,9 @@ impl Shell {
         println!("ls: List files in the filesystem");
     }
 
+    /// Print the given arguments
+    ///
+    /// 打印给定的参数
     fn cmd_echo(&self, args: &[&str]) {
         if args.is_empty() {
             println!("Usage: echo <string>");
@@ -66,12 +147,18 @@ impl Shell {
         println!("{}", args.join(" "));
     }
 
+    /// Clear the screen
+    ///
+    /// 清屏
     fn cmd_clear(&self) {
         for _ in 0..crate::BUFFER_HEIGHT {
             println!();
         }
     }
 
+    /// Print the contents of the file with the given name
+    ///
+    /// 打印给定名称的文件的内容
     fn cmd_cat(&self, args: &[&str]) {
         if args.is_empty() {
             println!("Usage: cat <filename>");
@@ -90,6 +177,9 @@ impl Shell {
         }
     }
 
+    /// List files in the filesystem
+    ///
+    /// 列出文件系统中的文件
     fn cmd_ls(&self) {
         let fs = crate::FILESYSTEM.lock();
         // 打印所有文件名

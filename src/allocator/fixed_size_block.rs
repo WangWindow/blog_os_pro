@@ -9,20 +9,34 @@ use core::{
 ///
 /// The sizes must each be power of 2 because they are also used as
 /// the block alignment (alignments must be always powers of 2).
+///
+/// 用于分配的块大小
+///
+/// 这些大小必须是2的幂，因为它们也用作块对齐（对齐必须始终是2的幂）
 const BLOCK_SIZES: &[usize] = &[8, 16, 32, 64, 128, 256, 512, 1024, 2048];
 
 /// Choose an appropriate block size for the given layout.
 ///
 /// Returns an index into the `BLOCK_SIZES` array.
+///
+/// 为给定的布局选择一个合适的块大小
+///
+/// 返回一个`BLOCK_SIZES`数组的索引
 fn list_index(layout: &Layout) -> Option<usize> {
     let required_block_size = layout.size().max(layout.align());
     BLOCK_SIZES.iter().position(|&s| s >= required_block_size)
 }
 
+/// A node in a singly-linked list.
+///
+/// 单链表中的节点
 struct ListNode {
     next: Option<&'static mut ListNode>,
 }
 
+/// A fixed size block allocator that can hold a fixed number of blocks of different sizes.
+///
+/// 固定大小的块分配器，可以容纳不同大小的固定数量的块
 pub struct FixedSizeBlockAllocator {
     list_heads: [Option<&'static mut ListNode>; BLOCK_SIZES.len()],
     fallback_allocator: linked_list_allocator::Heap,
@@ -30,6 +44,8 @@ pub struct FixedSizeBlockAllocator {
 
 impl FixedSizeBlockAllocator {
     /// Creates an empty FixedSizeBlockAllocator.
+    ///
+    /// 创建一个空的FixedSizeBlockAllocator
     pub const fn new() -> Self {
         const EMPTY: Option<&'static mut ListNode> = None;
         FixedSizeBlockAllocator {
@@ -43,11 +59,18 @@ impl FixedSizeBlockAllocator {
     /// This function is unsafe because the caller must guarantee that the given
     /// heap bounds are valid and that the heap is unused. This method must be
     /// called only once.
+    ///
+    /// 使用给定的堆边界初始化分配器
+    ///
+    /// 此函数是不安全的，因为调用者必须保证给定的堆边界是有效的，并且堆未使用
+    /// 此方法只能调用一次
     pub unsafe fn init(&mut self, heap_start: usize, heap_size: usize) {
         self.fallback_allocator.init(heap_start, heap_size);
     }
 
     /// Allocates using the fallback allocator.
+    ///
+    /// 使用回退分配器分配
     fn fallback_alloc(&mut self, layout: Layout) -> *mut u8 {
         match self.fallback_allocator.allocate_first_fit(layout) {
             Ok(ptr) => ptr.as_ptr(),
@@ -57,6 +80,9 @@ impl FixedSizeBlockAllocator {
 }
 
 unsafe impl GlobalAlloc for Locked<FixedSizeBlockAllocator> {
+    /// Allocates using the block lists.
+    ///
+    /// 分配使用块列表
     unsafe fn alloc(&self, layout: Layout) -> *mut u8 {
         let mut allocator = self.lock();
         match list_index(&layout) {
@@ -80,6 +106,9 @@ unsafe impl GlobalAlloc for Locked<FixedSizeBlockAllocator> {
         }
     }
 
+    /// Deallocates using the block lists.
+    ///
+    /// 使用块列表释放
     unsafe fn dealloc(&self, ptr: *mut u8, layout: Layout) {
         let mut allocator = self.lock();
         match list_index(&layout) {

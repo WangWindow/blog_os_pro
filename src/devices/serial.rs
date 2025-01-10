@@ -3,6 +3,9 @@ use spin::Mutex;
 use uart_16550::SerialPort;
 
 lazy_static! {
+    /// The global serial interface instance.
+    ///
+    /// 全局串行接口实例。
     pub static ref SERIAL1: Mutex<SerialPort> = {
         let mut serial_port = unsafe { SerialPort::new(0x3F8) };
         serial_port.init();
@@ -10,6 +13,9 @@ lazy_static! {
     };
 }
 
+/// Prints to the host through the serial interface.
+///
+/// 通过串行接口打印到主机。
 #[doc(hidden)]
 pub fn _print(args: ::core::fmt::Arguments) {
     use core::fmt::Write;
@@ -24,6 +30,8 @@ pub fn _print(args: ::core::fmt::Arguments) {
 }
 
 /// Prints to the host through the serial interface.
+///
+/// 通过串行接口打印到主机。
 #[macro_export]
 macro_rules! serial_print {
     ($($arg:tt)*) => {
@@ -32,6 +40,8 @@ macro_rules! serial_print {
 }
 
 /// Prints to the host through the serial interface, appending a newline.
+///
+/// 通过串行接口打印到主机，附加一个换行符。
 #[macro_export]
 macro_rules! serial_println {
     () => ($crate::serial_print!("\n"));

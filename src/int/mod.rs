@@ -7,6 +7,8 @@ use x86_64::structures::idt::{InterruptDescriptorTable, InterruptStackFrame, Pag
 pub const PIC_1_OFFSET: u8 = 32;
 pub const PIC_2_OFFSET: u8 = PIC_1_OFFSET + 8;
 
+pub mod time;
+
 #[derive(Debug, Clone, Copy)]
 #[repr(u8)]
 pub enum InterruptIndex {
@@ -24,11 +26,22 @@ impl InterruptIndex {
     }
 }
 
-// PIC: Programmable Interrupt Controller
+/// PIC: Programmable Interrupt Controller
+///
+/// PIC: 可编程中断控制器
 pub static PICS: spin::Mutex<ChainedPics> =
     spin::Mutex::new(unsafe { ChainedPics::new(PIC_1_OFFSET, PIC_2_OFFSET) });
 
 lazy_static! {
+    /// Interrupt Descriptor Table
+    ///
+    /// 0-31:  CPU exceptions
+    ///
+    /// 32-47: PIC interrupts
+    ///
+    /// 48-255: User defined interrupts
+    ///
+    /// 中断描述符表
     static ref IDT: InterruptDescriptorTable = {
         let mut idt = InterruptDescriptorTable::new();
         idt.breakpoint.set_handler_fn(breakpoint_handler);
@@ -44,17 +57,23 @@ lazy_static! {
     };
 }
 
-// 初始化中断描述符表
+/// Initialize the Interrupt Descriptor Table
+///
+/// 初始化中断描述符表
 pub fn init_idt() {
     IDT.load();
 }
 
-// 断点异常处理函数
+/// Breakpoint exception handler
+///
+/// 断点异常处理函数
 extern "x86-interrupt" fn breakpoint_handler(stack_frame: InterruptStackFrame) {
     println!("EXCEPTION: BREAKPOINT\n{:#?}", stack_frame);
 }
 
-// 缺页异常处理函数
+/// Page fault exception handler
+///
+/// 缺页异常处理函数
 extern "x86-interrupt" fn page_fault_handler(
     stack_frame: InterruptStackFrame,
     error_code: PageFaultErrorCode,
@@ -68,7 +87,9 @@ extern "x86-interrupt" fn page_fault_handler(
     hlt_loop();
 }
 
-// 双重错误处理函数
+/// Double fault exception handler
+///
+/// 双重错误处理函数
 extern "x86-interrupt" fn double_fault_handler(
     stack_frame: InterruptStackFrame,
     _error_code: u64,
@@ -76,16 +97,20 @@ extern "x86-interrupt" fn double_fault_handler(
     panic!("EXCEPTION: DOUBLE FAULT\n{:#?}", stack_frame);
 }
 
-// 定时器中断处理函数
+/// Timer interrupt handler
+///
+/// 定时器中断处理函数
 extern "x86-interrupt" fn timer_interrupt_handler(_stack_frame: InterruptStackFrame) {
-    // print!(".");
+    time::tick();
     unsafe {
         PICS.lock()
             .notify_end_of_interrupt(InterruptIndex::Timer.as_u8());
     }
 }
 
-// 键盘中断处理函数
+/// Keyboard interrupt handler
+///
+/// 键盘中断处理函数
 extern "x86-interrupt" fn keyboard_interrupt_handler(_stack_frame: InterruptStackFrame) {
     use x86_64::instructions::port::Port;
 

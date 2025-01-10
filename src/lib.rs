@@ -14,6 +14,9 @@ use spin::Mutex;
 pub const BUFFER_HEIGHT: usize = 25;
 
 lazy_static! {
+    /// Global file system
+    ///
+    /// 全局文件系统
     pub static ref FILESYSTEM: Mutex<fs::FileSystem> = Mutex::new(fs::FileSystem::new());
 }
 
@@ -21,14 +24,17 @@ pub mod allocator;
 pub mod boot;
 pub mod devices;
 pub mod fs;
-pub mod interrupts;
+pub mod int;
 pub mod mm;
 pub mod task;
 
+/// Initialize the kernel
+///
+/// 初始化内核
 pub fn init() {
     boot::gdt::init();
-    interrupts::init_idt();
-    unsafe { interrupts::PICS.lock().initialize() };
+    int::init_idt();
+    unsafe { int::PICS.lock().initialize() };
     x86_64::instructions::interrupts::enable();
 }
 pub trait Testable {
@@ -46,6 +52,9 @@ where
     }
 }
 
+/// Entry point for `cargo test`
+///
+/// `cargo test` 的入口点
 pub fn test_runner(tests: &[&dyn Testable]) {
     serial_println!("Running {} tests", tests.len());
     for test in tests {
@@ -54,6 +63,9 @@ pub fn test_runner(tests: &[&dyn Testable]) {
     exit_qemu(QemuExitCode::Success);
 }
 
+/// Test panic handler
+///
+/// 测试 panic 处理函数
 pub fn test_panic_handler(info: &PanicInfo) -> ! {
     serial_println!("[failed]\n");
     serial_println!("Error: {}\n", info);
@@ -61,6 +73,9 @@ pub fn test_panic_handler(info: &PanicInfo) -> ! {
     hlt_loop();
 }
 
+/// Enum representing QEMU exit codes
+///
+/// 表示 QEMU 退出码的枚举
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 #[repr(u32)]
 pub enum QemuExitCode {
@@ -68,6 +83,9 @@ pub enum QemuExitCode {
     Failed = 0x11,
 }
 
+/// Exit QEMU with the given exit code
+///
+/// 使用给定的退出码退出 QEMU
 pub fn exit_qemu(exit_code: QemuExitCode) {
     use x86_64::instructions::port::Port;
 
@@ -77,6 +95,9 @@ pub fn exit_qemu(exit_code: QemuExitCode) {
     }
 }
 
+/// Loop that halts the CPU
+///
+/// 使 CPU 进入循环休眠状态
 pub fn hlt_loop() -> ! {
     loop {
         x86_64::instructions::hlt();
@@ -90,6 +111,8 @@ use bootloader::{entry_point, BootInfo};
 entry_point!(test_kernel_main);
 
 /// Entry point for `cargo xtest`
+///
+/// `cargo xtest` 的入口点
 #[cfg(test)]
 fn test_kernel_main(_boot_info: &'static BootInfo) -> ! {
     init();
