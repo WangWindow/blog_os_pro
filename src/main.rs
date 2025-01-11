@@ -9,8 +9,9 @@ extern crate alloc;
 // use blog_os::int::time::sleep;
 use blog_os::mm::{allocator, memory, memory::BootInfoFrameAllocator};
 use blog_os::println;
-use blog_os::task::{executor::Executor, keyboard, Task};
-use bootloader::{entry_point, BootInfo};
+use blog_os::task::simple_task;
+use blog_os::task::{self, Task, executor::Executor};
+use bootloader::{BootInfo, entry_point};
 use core::panic::PanicInfo;
 use x86_64::VirtAddr;
 
@@ -19,9 +20,9 @@ entry_point!(kernel_main);
 /// 内核入口点
 fn kernel_main(boot_info: &'static BootInfo) -> ! {
     // 初始化
+    blog_os::init();
     blog_os::boot::welcome::show_welcome();
     println!("Hello World{}", "!");
-    blog_os::init();
 
     // 初始化内存分配器
     let phys_mem_offset = VirtAddr::new(boot_info.physical_memory_offset);
@@ -36,15 +37,8 @@ fn kernel_main(boot_info: &'static BootInfo) -> ! {
 
     // 初始化任务
     let mut executor = Executor::new();
-    executor.spawn(Task::new(keyboard::print_keypresses()));
+    executor.spawn(Task::new(task::keyboard::print_keypresses()));
     executor.run();
-    // let mut count = 0;
-    // println!("Count Start!");
-    // loop {
-    //     sleep(10);
-    //     count = count + 1;
-    //     println!("{}", count);
-    // }
 }
 
 /// 当 panic 时调用

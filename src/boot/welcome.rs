@@ -1,5 +1,4 @@
-use crate::{print, println};
-use core::fmt::Write;
+use crate::{print, println, time};
 
 const BANNER: &str = r#"
   _       _                    ___    ____
@@ -23,21 +22,21 @@ pub fn show_welcome() {
     }
 
     // 打字机效果显示欢迎文本
-    typewriter_print(WELCOME_TEXT, 50);
+    typewriter_print(WELCOME_TEXT, 1);
 }
 
 /// 打字机效果打印文本
-fn typewriter_print(text: &str, delay_ms: u64) {
+fn typewriter_print(text: &str, delay_time: u64) {
     for c in text.chars() {
         print!("{}", c);
-        // spin_sleep(delay_ms);
+        spin_sleep(delay_time);
     }
 }
 
 /// 自旋等待
-fn spin_sleep(ms: u64) {
-    let end = crate::int::time::current_time_millis() + ms;
-    while crate::int::time::current_time_millis() < end {
+fn spin_sleep(sleep_time: u64) {
+    let end = crate::int::time::current_time_millis() + sleep_time;
+    while time::current_time_millis() < end {
         core::hint::spin_loop();
     }
 }

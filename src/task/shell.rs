@@ -1,5 +1,6 @@
+use super::BUFFER_WIDTH;
 use crate::io::vga_buffer::WRITER;
-use crate::{print, println};
+use crate::{print, println, task, time};
 use alloc::{string::String, vec::Vec};
 use core::fmt::Write;
 use pc_keyboard::{DecodedKey, KeyCode};
@@ -24,19 +25,6 @@ impl Shell {
     /// 处理按键
     pub fn handle_key(&mut self, key: DecodedKey) {
         match key {
-            DecodedKey::Unicode(c) => {
-                if c == '\n' {
-                    self.execute_command();
-                    self.input_buffer.clear();
-                    self.cursor_position = 0;
-                    print!("{}", self.prompt);
-                } else {
-                    // 在光标位置插入字符
-                    self.input_buffer.insert(self.cursor_position, c);
-                    self.cursor_position += 1;
-                    self.redraw_line();
-                }
-            }
             DecodedKey::RawKey(key) => match key {
                 KeyCode::ArrowLeft => {
                     if self.cursor_position > 0 {
@@ -65,6 +53,19 @@ impl Shell {
                 }
                 _ => {}
             },
+            DecodedKey::Unicode(c) => {
+                if c == '\n' {
+                    self.execute_command();
+                    self.input_buffer.clear();
+                    self.cursor_position = 0;
+                    print!("{}", self.prompt);
+                } else {
+                    // 在光标位置插入字符
+                    self.input_buffer.insert(self.cursor_position, c);
+                    self.cursor_position += 1;
+                    self.redraw_line();
+                }
+            }
         }
     }
 
@@ -75,7 +76,7 @@ impl Shell {
         writer.set_column(0);
 
         // 清除当前行
-        for _ in 0..80 {
+        for _ in 0..BUFFER_WIDTH {
             write!(writer, " ").unwrap();
         }
         writer.set_column(0);
@@ -107,6 +108,11 @@ impl Shell {
             "help" => self.cmd_help(),
             "echo" => self.cmd_echo(&args[1..]),
             "clear" => self.cmd_clear(),
+            "run" => {
+                let mut executor = task::executor::Executor::new();
+                executor.spawn(task::Task::new(task::simple_task::print_task()));
+                executor.run();
+            }
             // "cat" => self.cmd_cat(&args[1..]),
             // "ls" => self.cmd_ls(),
             _ => println!("Unknown command: {}", args[0]),
@@ -115,12 +121,14 @@ impl Shell {
 
     /// 打印帮助信息
     fn cmd_help(&self) {
-        println!("Available commands:");
-        println!("help: Print this help message");
-        println!("echo <string>: Print the string to the screen");
-        println!("clear: Clear the screen");
-        println!("cat <filename>: Print the contents of the file");
-        println!("ls: List files in the filesystem");
+        println!("------------------------------------");
+        println!("|Available commands:");
+        println!("|  help: Print this help message");
+        println!("|  echo <string>: Print the string to the screen");
+        println!("|  clear: Clear the screen");
+        // println!("|  cat <filename>: Print the contents of the file");
+        // println!("|  ls: List files in the filesystem");
+        println!("------------------------------------");
     }
 
     /// 打印给定的参数

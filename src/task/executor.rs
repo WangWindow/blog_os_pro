@@ -20,7 +20,7 @@ impl Executor {
         }
     }
 
-    /// 启动一个新任务
+    /// 产生一个新任务
     pub fn spawn(&mut self, task: Task) {
         let task_id = task.id;
         if self.tasks.insert(task.id, task).is_some() {

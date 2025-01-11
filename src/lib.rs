@@ -7,13 +7,7 @@
 
 extern crate alloc;
 use core::panic::PanicInfo;
-use lazy_static::lazy_static;
-use spin::Mutex;
-
-// lazy_static! {
-//     /// 全局文件系统
-//     pub static ref FILESYSTEM: Mutex<fs::FileSystem> = Mutex::new(fs::FileSystem::new());
-// }
+use int::time;
 
 pub mod boot;
 pub mod fs;
