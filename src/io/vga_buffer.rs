@@ -227,7 +227,7 @@ impl fmt::Write for Writer {
 /// 类似于标准库中的`print!`宏，但打印到VGA文本缓冲区。
 #[macro_export]
 macro_rules! print {
-    ($($arg:tt)*) => ($crate::devices::vga_buffer::_print(format_args!($($arg)*)));
+    ($($arg:tt)*) => ($crate::io::vga_buffer::_print(format_args!($($arg)*)));
 }
 
 /// Like the `println!` macro in the standard library, but prints to the VGA text buffer.

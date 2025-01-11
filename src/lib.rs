@@ -16,13 +16,12 @@ lazy_static! {
     /// Global file system
     ///
     /// 全局文件系统
-    pub static ref FILESYSTEM: Mutex<fs::FileSystem> = Mutex::new(fs::FileSystem::new());
+    pub static ref FILESYSTEM: Mutex<io::fs::FileSystem> = Mutex::new(io::fs::FileSystem::new());
 }
 
 pub mod boot;
-pub mod devices;
-pub mod fs;
 pub mod int;
+pub mod io;
 pub mod mm;
 pub mod task;
 
