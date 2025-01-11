@@ -2,7 +2,6 @@
 #![cfg_attr(test, no_main)]
 #![feature(custom_test_frameworks)]
 #![feature(abi_x86_interrupt)]
-#![feature(const_mut_refs)]
 #![test_runner(crate::test_runner)]
 #![reexport_test_harness_main = "test_main"]
 
@@ -11,7 +10,7 @@ use core::panic::PanicInfo;
 use lazy_static::lazy_static;
 use spin::Mutex;
 
-pub const BUFFER_HEIGHT: usize = 25;
+pub const BUFFER_HEIGHT: usize = 25; // 缓冲区高度
 
 lazy_static! {
     /// Global file system

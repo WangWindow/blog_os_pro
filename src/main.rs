@@ -7,7 +7,7 @@
 extern crate alloc;
 
 use blog_os::allocator;
-use blog_os::mm::memory::{self, BootInfoFrameAllocator};
+use blog_os::mm::{memory, memory::BootInfoFrameAllocator};
 use blog_os::println;
 use blog_os::task::{executor::Executor, keyboard, Task};
 use bootloader::{entry_point, BootInfo};
