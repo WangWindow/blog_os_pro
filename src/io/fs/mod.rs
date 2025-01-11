@@ -18,6 +18,8 @@ pub struct File {
     data: Vec<u8>,
 }
 
+/// `WriteMode` represents the write mode
+///
 /// 表示写入模式
 pub enum WriteMode {
     Overwrite,
