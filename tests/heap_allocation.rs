@@ -7,14 +7,14 @@
 extern crate alloc;
 
 use alloc::{boxed::Box, vec::Vec};
-use blog_os::allocator::HEAP_SIZE;
+use blog_os::mm::allocator::HEAP_SIZE;
 use bootloader::{entry_point, BootInfo};
 use core::panic::PanicInfo;
 
 entry_point!(main);
 
 fn main(boot_info: &'static BootInfo) -> ! {
-    use blog_os::allocator;
+    use blog_os::mm::allocator;
     use blog_os::mm::memory::{self, BootInfoFrameAllocator};
     use x86_64::VirtAddr;
 

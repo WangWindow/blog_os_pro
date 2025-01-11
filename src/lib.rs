@@ -19,7 +19,6 @@ lazy_static! {
     pub static ref FILESYSTEM: Mutex<fs::FileSystem> = Mutex::new(fs::FileSystem::new());
 }
 
-pub mod allocator;
 pub mod boot;
 pub mod devices;
 pub mod fs;
