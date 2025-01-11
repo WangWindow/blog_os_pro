@@ -22,3 +22,10 @@ pub fn uptime_str() -> alloc::string::String {
 
     alloc::format!("{:02}:{:02}:{:02}", hours, minutes % 60, seconds % 60)
 }
+
+/// 阻塞指定的时间( time 个时钟周期)
+pub fn sleep(time: u64) {
+    let current_time = current_time_millis();
+
+    while current_time_millis() - current_time < time {}
+}

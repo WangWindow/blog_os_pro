@@ -10,6 +10,9 @@ pub mod executor;
 pub mod keyboard;
 pub mod shell;
 
+pub const BUFFER_HEIGHT: usize = 25; // 缓冲区高度
+pub const BUFFER_WIDTH: usize = 80; // 缓冲区宽度
+
 pub struct Task {
     id: TaskId,
     future: Pin<Box<dyn Future<Output = ()>>>,

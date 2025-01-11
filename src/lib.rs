@@ -10,14 +10,13 @@ use core::panic::PanicInfo;
 use lazy_static::lazy_static;
 use spin::Mutex;
 
-pub const BUFFER_HEIGHT: usize = 25; // 缓冲区高度
-
-lazy_static! {
-    /// 全局文件系统
-    pub static ref FILESYSTEM: Mutex<io::fs::FileSystem> = Mutex::new(io::fs::FileSystem::new());
-}
+// lazy_static! {
+//     /// 全局文件系统
+//     pub static ref FILESYSTEM: Mutex<fs::FileSystem> = Mutex::new(fs::FileSystem::new());
+// }
 
 pub mod boot;
+pub mod fs;
 pub mod int;
 pub mod io;
 pub mod mm;
@@ -34,15 +33,6 @@ pub fn init() {
 
     // 启用中断
     x86_64::instructions::interrupts::enable();
-
-    // 初始化磁盘，路径为磁盘映像文件
-    let mut disk = io::disk::Disk::new("disk.img");
-
-    // 初始化文件系统
-    let mut fs = io::fs::FileSystem::load(&mut disk).unwrap_or_else(|| io::fs::FileSystem::new());
-
-    // 保存文件系统到磁盘
-    fs.save(&mut disk).expect("保存文件系统失败");
 }
 pub trait Testable {
     fn run(&self) -> ();
@@ -102,7 +92,7 @@ pub fn hlt_loop() -> ! {
 }
 
 #[cfg(test)]
-use bootloader::{entry_point, BootInfo};
+use bootloader::{BootInfo, entry_point};
 
 #[cfg(test)]
 entry_point!(test_kernel_main);

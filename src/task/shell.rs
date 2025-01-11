@@ -107,8 +107,8 @@ impl Shell {
             "help" => self.cmd_help(),
             "echo" => self.cmd_echo(&args[1..]),
             "clear" => self.cmd_clear(),
-            "cat" => self.cmd_cat(&args[1..]),
-            "ls" => self.cmd_ls(),
+            // "cat" => self.cmd_cat(&args[1..]),
+            // "ls" => self.cmd_ls(),
             _ => println!("Unknown command: {}", args[0]),
         }
     }
@@ -135,36 +135,36 @@ impl Shell {
 
     /// 清屏
     fn cmd_clear(&self) {
-        for _ in 0..crate::BUFFER_HEIGHT {
+        for _ in 0..super::BUFFER_HEIGHT {
             println!();
         }
     }
 
-    /// 打印给定名称的文件的内容
-    fn cmd_cat(&self, args: &[&str]) {
-        if args.is_empty() {
-            println!("Usage: cat <filename>");
-            return;
-        }
+    // /// 打印给定名称的文件的内容
+    // fn cmd_cat(&self, args: &[&str]) {
+    //     if args.is_empty() {
+    //         println!("Usage: cat <filename>");
+    //         return;
+    //     }
 
-        let fs = crate::FILESYSTEM.lock();
-        match fs.read_file(args[0]) {
-            Some(content) => {
-                // 将内容转换为字符串并打印
-                if let Ok(s) = core::str::from_utf8(content) {
-                    print!("{}", s);
-                }
-            }
-            None => println!("File not found: {}", args[0]),
-        }
-    }
+    //     let fs = crate::FILESYSTEM.lock();
+    //     match fs.read_file(args[0]) {
+    //         Some(content) => {
+    //             // 将内容转换为字符串并打印
+    //             if let Ok(s) = core::str::from_utf8(content) {
+    //                 print!("{}", s);
+    //             }
+    //         }
+    //         None => println!("File not found: {}", args[0]),
+    //     }
+    // }
 
-    /// 列出文件系统中的文件
-    fn cmd_ls(&self) {
-        let fs = crate::FILESYSTEM.lock();
-        // 打印所有文件名
-        for file in fs.iter() {
-            println!("{}", file.name());
-        }
-    }
+    // /// 列出文件系统中的文件
+    // fn cmd_ls(&self) {
+    //     let fs = crate::FILESYSTEM.lock();
+    //     // 打印所有文件名
+    //     for file in fs.iter() {
+    //         println!("{}", file.name());
+    //     }
+    // }
 }

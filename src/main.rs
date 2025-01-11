@@ -6,6 +6,7 @@
 
 extern crate alloc;
 
+// use blog_os::int::time::sleep;
 use blog_os::mm::{allocator, memory, memory::BootInfoFrameAllocator};
 use blog_os::println;
 use blog_os::task::{executor::Executor, keyboard, Task};
@@ -37,6 +38,13 @@ fn kernel_main(boot_info: &'static BootInfo) -> ! {
     let mut executor = Executor::new();
     executor.spawn(Task::new(keyboard::print_keypresses()));
     executor.run();
+    // let mut count = 0;
+    // println!("Count Start!");
+    // loop {
+    //     sleep(10);
+    //     count = count + 1;
+    //     println!("{}", count);
+    // }
 }
 
 /// 当 panic 时调用
