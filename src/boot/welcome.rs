@@ -15,8 +15,6 @@ Welcome to blogOS!
 Type 'help' for a list of commands.
 "#;
 
-/// Show the welcome screen
-///
 /// 显示欢迎界面
 pub fn show_welcome() {
     // 打印彩色 Logo
@@ -28,8 +26,6 @@ pub fn show_welcome() {
     typewriter_print(WELCOME_TEXT, 50);
 }
 
-/// Print text with typewriter effect
-///
 /// 打字机效果打印文本
 fn typewriter_print(text: &str, delay_ms: u64) {
     for c in text.chars() {
@@ -38,8 +34,6 @@ fn typewriter_print(text: &str, delay_ms: u64) {
     }
 }
 
-/// Spin wait
-///
 /// 自旋等待
 fn spin_sleep(ms: u64) {
     let end = crate::int::time::current_time_millis() + ms;

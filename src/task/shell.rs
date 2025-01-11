@@ -1,11 +1,9 @@
 use crate::io::vga_buffer::WRITER;
-use core::fmt::Write;
 use crate::{print, println};
 use alloc::{string::String, vec::Vec};
+use core::fmt::Write;
 use pc_keyboard::{DecodedKey, KeyCode};
 
-/// Struct of the shell
-///
 /// Shell 结构体
 pub struct Shell {
     input_buffer: String,   // 输入缓冲区
@@ -14,8 +12,6 @@ pub struct Shell {
 }
 
 impl Shell {
-    /// Create a new shell
-    ///
     /// 创建一个新的 shell
     pub fn new() -> Self {
         Shell {
@@ -25,8 +21,6 @@ impl Shell {
         }
     }
 
-    /// Handle a key press
-    ///
     /// 处理按键
     pub fn handle_key(&mut self, key: DecodedKey) {
         match key {
@@ -74,8 +68,6 @@ impl Shell {
         }
     }
 
-    /// Redraw the current line
-    ///
     /// 重绘当前行
     fn redraw_line(&self) {
         let mut writer = WRITER.lock();
@@ -103,8 +95,6 @@ impl Shell {
         writer.set_column(cursor_column);
     }
 
-    /// Execute the command in the input buffer
-    ///
     /// 执行输入缓冲区中的命令
     fn execute_command(&self) {
         println!();
@@ -123,8 +113,6 @@ impl Shell {
         }
     }
 
-    /// Print the help message
-    ///
     /// 打印帮助信息
     fn cmd_help(&self) {
         println!("Available commands:");
@@ -135,8 +123,6 @@ impl Shell {
         println!("ls: List files in the filesystem");
     }
 
-    /// Print the given arguments
-    ///
     /// 打印给定的参数
     fn cmd_echo(&self, args: &[&str]) {
         if args.is_empty() {
@@ -147,8 +133,6 @@ impl Shell {
         println!("{}", args.join(" "));
     }
 
-    /// Clear the screen
-    ///
     /// 清屏
     fn cmd_clear(&self) {
         for _ in 0..crate::BUFFER_HEIGHT {
@@ -156,8 +140,6 @@ impl Shell {
         }
     }
 
-    /// Print the contents of the file with the given name
-    ///
     /// 打印给定名称的文件的内容
     fn cmd_cat(&self, args: &[&str]) {
         if args.is_empty() {
@@ -177,8 +159,6 @@ impl Shell {
         }
     }
 
-    /// List files in the filesystem
-    ///
     /// 列出文件系统中的文件
     fn cmd_ls(&self) {
         let fs = crate::FILESYSTEM.lock();

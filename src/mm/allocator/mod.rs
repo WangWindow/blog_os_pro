@@ -15,14 +15,10 @@ pub mod linked_list;
 pub const HEAP_START: usize = 0x_4444_4444_0000;
 pub const HEAP_SIZE: usize = 100 * 1024; // 100 KiB
 
-/// A global allocator for our kernel.
-///
-/// 我们内核的全局分配器。
+/// 内核的全局分配器。
 #[global_allocator]
 static ALLOCATOR: Locked<FixedSizeBlockAllocator> = Locked::new(FixedSizeBlockAllocator::new());
 
-/// Initialize the heap.
-///
 /// 初始化堆
 pub fn init_heap(
     mapper: &mut impl Mapper<Size4KiB>,
@@ -54,23 +50,17 @@ pub fn init_heap(
 pub struct Dummy;
 
 unsafe impl GlobalAlloc for Dummy {
-    /// Allocates memory as described by the given layout.
-    ///
     /// 分配由给定布局描述的内存。
     unsafe fn alloc(&self, _layout: Layout) -> *mut u8 {
         null_mut()
     }
 
-    /// Deallocates the memory referenced by `ptr`.
-    ///
     /// 释放由`ptr`引用的内存。
     unsafe fn dealloc(&self, _ptr: *mut u8, _layout: Layout) {
         panic!("dealloc should be never called")
     }
 }
 
-/// A wrapper around spin::Mutex to permit trait implementations.
-///
 /// 一个围绕spin::Mutex的包装器，允许trait实现。
 pub struct Locked<A> {
     inner: spin::Mutex<A>,
@@ -88,10 +78,6 @@ impl<A> Locked<A> {
     }
 }
 
-/// Align the given address `addr` upwards to alignment `align`.
-///
-/// Requires that `align` is a power of two.
-///
 /// 将给定地址`addr`向上对齐到对齐`align`。
 ///
 /// 要求`align`是2的幂。

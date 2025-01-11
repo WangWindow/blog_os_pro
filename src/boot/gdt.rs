@@ -6,8 +6,6 @@ use x86_64::VirtAddr;
 pub const DOUBLE_FAULT_IST_INDEX: u16 = 0;
 
 lazy_static! {
-    /// Task state segment
-    ///
     /// 任务状态段
     static ref TSS: TaskStateSegment = {
         let mut tss = TaskStateSegment::new();
@@ -24,8 +22,6 @@ lazy_static! {
 }
 
 lazy_static! {
-    /// Global descriptor table
-    ///
     /// 全局描述符表
     static ref GDT: (GlobalDescriptorTable, Selectors) = {
         let mut gdt = GlobalDescriptorTable::new();
@@ -41,16 +37,12 @@ lazy_static! {
     };
 }
 
-/// Thing that holds the selectors
-///
 /// 选择器
 struct Selectors {
     code_selector: SegmentSelector,
     tss_selector: SegmentSelector,
 }
 
-/// Initialize the GDT
-///
 /// 初始化全局描述符表
 pub fn init() {
     use x86_64::instructions::segmentation::{Segment, CS};

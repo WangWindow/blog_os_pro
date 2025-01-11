@@ -15,9 +15,9 @@ use pc_keyboard::{layouts, HandleControl, Keyboard, ScancodeSet1};
 static SCANCODE_QUEUE: OnceCell<ArrayQueue<u8>> = OnceCell::uninit();
 static WAKER: AtomicWaker = AtomicWaker::new();
 
-/// Called by the keyboard interrupt handler
+/// 由键盘中断处理程序调用
 ///
-/// Must not block or allocate.
+/// 不能阻塞或分配
 pub(crate) fn add_scancode(scancode: u8) {
     if let Ok(queue) = SCANCODE_QUEUE.try_get() {
         if let Err(_) = queue.push(scancode) {
@@ -46,6 +46,7 @@ impl ScancodeStream {
 impl Stream for ScancodeStream {
     type Item = u8;
 
+    /// 轮询`ScancodeStream`以获取下一个扫描码。
     fn poll_next(self: Pin<&mut Self>, cx: &mut Context) -> Poll<Option<u8>> {
         let queue = SCANCODE_QUEUE
             .try_get()
@@ -67,7 +68,7 @@ impl Stream for ScancodeStream {
     }
 }
 
-// 打印键盘输入
+/// 打印键盘输入
 pub async fn print_keypresses() {
     let mut scancodes = ScancodeStream::new();
     let mut keyboard = Keyboard::new(

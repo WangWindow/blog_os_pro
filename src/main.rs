@@ -15,8 +15,6 @@ use x86_64::VirtAddr;
 
 entry_point!(kernel_main);
 
-/// The entry point for the kernel
-///
 /// 内核入口点
 fn kernel_main(boot_info: &'static BootInfo) -> ! {
     // 初始化
@@ -41,7 +39,7 @@ fn kernel_main(boot_info: &'static BootInfo) -> ! {
     executor.run();
 }
 
-/// This function is called on panic.
+/// 当 panic 时调用
 #[cfg(not(test))]
 #[panic_handler]
 fn panic(info: &PanicInfo) -> ! {
