@@ -7,11 +7,11 @@
 
 extern crate alloc;
 use core::panic::PanicInfo;
-use int::time;
+use irq::time;
 
 pub mod boot;
 pub mod fs;
-pub mod int;
+pub mod irq;
 pub mod io;
 pub mod mm;
 pub mod task;
@@ -20,10 +20,10 @@ pub mod task;
 pub fn init() {
     // 初始化 GDT 和 IDT
     boot::gdt::init();
-    int::init_idt();
+    irq::init_idt();
 
     // 初始化 PIC
-    unsafe { int::PICS.lock().initialize() };
+    unsafe { irq::PICS.lock().initialize() };
 
     // 启用中断
     x86_64::instructions::interrupts::enable();
@@ -91,7 +91,7 @@ use bootloader::{BootInfo, entry_point};
 #[cfg(test)]
 entry_point!(test_kernel_main);
 
-/// `cargo xtest` 的入口点
+/// `cargo test` 的入口点
 #[cfg(test)]
 fn test_kernel_main(_boot_info: &'static BootInfo) -> ! {
     init();

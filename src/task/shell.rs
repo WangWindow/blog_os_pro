@@ -7,9 +7,11 @@ use pc_keyboard::{DecodedKey, KeyCode};
 
 /// Shell 结构体
 pub struct Shell {
-    input_buffer: String,   // 输入缓冲区
-    prompt: &'static str,   // 提示符
-    cursor_position: usize, // 光标位置
+    input_buffer: String,         // 输入缓冲区
+    prompt: &'static str,         // 提示符
+    cursor_position: usize,       // 光标位置
+    history: Vec<String>,         // 命令历史
+    history_index: Option<usize>, // 历史索引
 }
 
 impl Shell {
@@ -19,6 +21,8 @@ impl Shell {
             input_buffer: String::new(),
             prompt: "blog_os> ",
             cursor_position: 0,
+            history: Vec::new(),
+            history_index: None,
         }
     }
 
@@ -26,6 +30,38 @@ impl Shell {
     pub fn handle_key(&mut self, key: DecodedKey) {
         match key {
             DecodedKey::RawKey(key) => match key {
+                KeyCode::ArrowUp => {
+                    if !self.history.is_empty() {
+                        let new_index = match self.history_index {
+                            None => Some(self.history.len() - 1),
+                            Some(i) if i > 0 => Some(i - 1),
+                            Some(_) => Some(0),
+                        };
+                        self.history_index = new_index;
+                        if let Some(index) = new_index {
+                            self.input_buffer = self.history[index].clone();
+                            self.cursor_position = self.input_buffer.len();
+                            self.redraw_line();
+                        }
+                    }
+                }
+                KeyCode::ArrowDown => {
+                    if let Some(current_index) = self.history_index {
+                        let new_index = if current_index + 1 < self.history.len() {
+                            Some(current_index + 1)
+                        } else {
+                            None
+                        };
+                        self.history_index = new_index;
+                        if let Some(index) = new_index {
+                            self.input_buffer = self.history[index].clone();
+                        } else {
+                            self.input_buffer.clear();
+                        }
+                        self.cursor_position = self.input_buffer.len();
+                        self.redraw_line();
+                    }
+                }
                 KeyCode::ArrowLeft => {
                     if self.cursor_position > 0 {
                         self.cursor_position -= 1;
@@ -53,19 +89,23 @@ impl Shell {
                 }
                 _ => {}
             },
-            DecodedKey::Unicode(c) => {
-                if c == '\n' {
+            DecodedKey::Unicode(c) => match c {
+                '\n' => {
+                    if !self.input_buffer.trim().is_empty() {
+                        self.history.push(self.input_buffer.clone());
+                    }
+                    self.history_index = None;
                     self.execute_command();
                     self.input_buffer.clear();
                     self.cursor_position = 0;
                     print!("{}", self.prompt);
-                } else {
-                    // 在光标位置插入字符
+                }
+                _ => {
                     self.input_buffer.insert(self.cursor_position, c);
                     self.cursor_position += 1;
                     self.redraw_line();
                 }
-            }
+            },
         }
     }
 

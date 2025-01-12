@@ -35,7 +35,7 @@ fn typewriter_print(text: &str, delay_time: u64) {
 
 /// 自旋等待
 fn spin_sleep(sleep_time: u64) {
-    let end = crate::int::time::current_time_millis() + sleep_time;
+    let end = crate::irq::time::current_time_millis() + sleep_time;
     while time::current_time_millis() < end {
         core::hint::spin_loop();
     }
