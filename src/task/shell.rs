@@ -1,4 +1,4 @@
-use super::{BUFFER_WIDTH, Priority};
+use super::{BUFFER_WIDTH, EXECUTOR, Priority, executor};
 use crate::io::vga_buffer::WRITER;
 use crate::{print, println, task, time};
 use alloc::{string::String, vec::Vec};
@@ -69,22 +69,6 @@ impl Shell {
         }
     }
 
-    /// 重绘当前行
-    fn redraw_line(&self) {
-        let mut writer = WRITER.lock();
-        writer.set_column(0);
-        for _ in 0..BUFFER_WIDTH {
-            write!(writer, " ").unwrap();
-        }
-        writer.set_column(0);
-        write!(writer, "{}{}", self.prompt, self.input_buffer).unwrap();
-        let prompt_len = self.prompt.len();
-        let cursor_column = prompt_len + self.cursor_position;
-        writer.set_column(cursor_column);
-        write!(writer, " ").unwrap();
-        writer.set_column(cursor_column);
-    }
-
     /// 执行输入缓冲区中的命令
     fn execute_command(&self) {
         println!();
@@ -98,16 +82,7 @@ impl Shell {
             "echo" => self.cmd_echo(&args[1..]),
             "clear" => self.cmd_clear(),
             "add" => self.cmd_add(&args[1..]),
-            "run" => {
-                let mut executor = task::executor::Executor::new();
-                executor.spawn(task::Task::new(
-                    task::user_task::print_task(),
-                    Priority::Normal,
-                ));
-                executor.run();
-            }
-            // "cat" => self.cmd_cat(&args[1..]),
-            // "ls" => self.cmd_ls(),
+            "run" => self.cmd_run(),
             _ => println!("Unknown command: {}", args[0]),
         }
     }
@@ -115,12 +90,12 @@ impl Shell {
     /// 打印帮助信息
     fn cmd_help(&self) {
         println!("------------------------------------");
-        println!("|Available commands:");
-        println!("|  help: Print this help message");
-        println!("|  echo <string>: Print the string to the screen");
-        println!("|  clear: Clear the screen");
-        // println!("|  cat <filename>: Print the contents of the file");
-        // println!("|  ls: List files in the filesystem");
+        println!("| Available commands:");
+        println!("| - help: Print this help message");
+        println!("| - echo <string>: Print the string to the screen");
+        println!("| - clear: Clear the screen");
+        println!("| - add <task name> <priority>: Add a new task to the task queue");
+        println!("| - run: Run the task queue");
         println!("------------------------------------");
     }
 
@@ -142,33 +117,58 @@ impl Shell {
     }
 
     /// 添加任务到任务队列
-    fn cmd_add(&self, args: &[&str]) {}
+    fn cmd_add(&self, args: &[&str]) {
+        if args.is_empty() {
+            println!("Usage: add <task_name> <priority>");
+            return;
+        }
 
-    // /// 打印给定名称的文件的内容
-    // fn cmd_cat(&self, args: &[&str]) {
-    //     if args.is_empty() {
-    //         println!("Usage: cat <filename>");
-    //         return;
-    //     }
+        if args.len() < 2 {
+            println!("No priority provided");
+            return;
+        }
 
-    //     let fs = crate::FILESYSTEM.lock();
-    //     match fs.read_file(args[0]) {
-    //         Some(content) => {
-    //             // 将内容转换为字符串并打印
-    //             if let Ok(s) = core::str::from_utf8(content) {
-    //                 print!("{}", s);
-    //             }
-    //         }
-    //         None => println!("File not found: {}", args[0]),
-    //     }
-    // }
+        let task = match args.get(0) {
+            Some(&"limit") => task::user_task::limited_time_task(10),
+            _ => {
+                println!("No task name provided or unknown task");
+                return;
+            }
+        };
 
-    // /// 列出文件系统中的文件
-    // fn cmd_ls(&self) {
-    //     let fs = crate::FILESYSTEM.lock();
-    //     // 打印所有文件名
-    //     for file in fs.iter() {
-    //         println!("{}", file.name());
-    //     }
-    // }
+        let priority = match args.get(1) {
+            Some(&"high") => Priority::High,
+            Some(&"normal") => Priority::Normal,
+            Some(&"low") => Priority::Low,
+            _ => {
+                println!("Invalid priority: {}", args[1]);
+                return;
+            }
+        };
+
+        let mut executor = EXECUTOR.lock();
+        executor.spawn(task::Task::new(task, priority));
+    }
+
+    /// 运行任务队列
+    fn cmd_run(&self) {
+        let mut executor = EXECUTOR.lock();
+        executor.run();
+    }
+
+    /// 重绘当前行
+    fn redraw_line(&self) {
+        let mut writer = WRITER.lock();
+        writer.set_column(0);
+        for _ in 0..BUFFER_WIDTH {
+            write!(writer, " ").unwrap();
+        }
+        writer.set_column(0);
+        write!(writer, "{}{}", self.prompt, self.input_buffer).unwrap();
+        let prompt_len = self.prompt.len();
+        let cursor_column = prompt_len + self.cursor_position;
+        writer.set_column(cursor_column);
+        write!(writer, " ").unwrap();
+        writer.set_column(cursor_column);
+    }
 }

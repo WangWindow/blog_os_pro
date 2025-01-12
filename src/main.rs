@@ -7,7 +7,7 @@
 extern crate alloc;
 use blog_os::mm::{allocator, memory, memory::BootInfoFrameAllocator};
 use blog_os::println;
-use blog_os::task::{self, Task, executor::Executor};
+use blog_os::task::{self, EXECUTOR, Task, executor};
 use bootloader::{BootInfo, entry_point};
 use core::panic::PanicInfo;
 use x86_64::VirtAddr;
@@ -33,9 +33,9 @@ fn kernel_main(boot_info: &'static BootInfo) -> ! {
     test_main();
 
     // 初始化任务
-    let mut executor = Executor::new();
+    let mut executor = EXECUTOR.lock();
     executor.spawn(Task::new(
-        task::keyboard::print_keypresses(),
+        task::keyboard::shell_task(),
         task::Priority::High,
     ));
     executor.run();

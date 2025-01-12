@@ -2,9 +2,22 @@ use alloc::boxed::Box;
 use core::{
     future::Future,
     pin::Pin,
-    sync::atomic::{AtomicU64, Ordering},
+    sync::atomic::{AtomicU64, AtomicUsize, Ordering},
     task::{Context, Poll},
 };
+use executor::Executor;
+use keyboard::shell_task;
+use lazy_static::lazy_static;
+use spin::Mutex;
+
+// 追踪当前执行的任务
+static CURRENT_TASK: AtomicUsize = AtomicUsize::new(0);
+static CURRENT_PRIORITY: AtomicUsize = AtomicUsize::new(0);
+
+lazy_static! {
+    /// 全局执行器实例
+    pub static ref EXECUTOR: Mutex<Executor> = Mutex::new(Executor::new());
+}
 
 pub mod executor;
 pub mod keyboard;
@@ -25,14 +38,14 @@ pub enum Priority {
 
 /// 任务结构体
 pub struct Task {
-    id: TaskId,                                // 任务 ID
-    future: Pin<Box<dyn Future<Output = ()>>>, // 任务的 Future
-    priority: Priority,                        // 任务优先级
+    id: TaskId,                                       // 任务 ID
+    future: Pin<Box<dyn Future<Output = ()> + Send>>, // 任务的 Future
+    priority: Priority,                               // 任务优先级
 }
 
 impl Task {
     /// 创建一个新的任务
-    pub fn new(future: impl Future<Output = ()> + 'static, priority: Priority) -> Task {
+    pub fn new(future: impl Future<Output = ()> + Send + 'static, priority: Priority) -> Task {
         Task {
             id: TaskId::new(),
             future: Box::pin(future),

@@ -10,7 +10,7 @@ use futures_util::{
     stream::{Stream, StreamExt},
     task::AtomicWaker,
 };
-use pc_keyboard::{layouts, HandleControl, Keyboard, ScancodeSet1};
+use pc_keyboard::{HandleControl, Keyboard, ScancodeSet1, layouts};
 
 static SCANCODE_QUEUE: OnceCell<ArrayQueue<u8>> = OnceCell::uninit();
 static WAKER: AtomicWaker = AtomicWaker::new();
@@ -69,7 +69,7 @@ impl Stream for ScancodeStream {
 }
 
 /// 打印键盘输入
-pub async fn print_keypresses() {
+pub async fn shell_task() {
     let mut scancodes = ScancodeStream::new();
     let mut keyboard = Keyboard::new(
         ScancodeSet1::new(),
