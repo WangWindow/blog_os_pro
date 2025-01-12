@@ -22,7 +22,7 @@ pub fn show_welcome() {
     }
 
     // 打字机效果显示欢迎文本
-    typewriter_print(WELCOME_TEXT, 1);
+    typewriter_print(WELCOME_TEXT, 0);
 }
 
 /// 打字机效果打印文本

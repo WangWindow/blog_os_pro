@@ -4,14 +4,6 @@ version = "0.1.0"
 edition = "2024"
 authors = ["WangWindow <1598593280@qq.com>"]
 
-[[test]]
-name = "should_panic"
-harness = false
-
-[[test]]
-name = "stack_overflow"
-harness = false
-
 [dependencies]
 bootloader = { version = "0.9", features = ["map_physical_memory"] }
 volatile = "0.2.6"

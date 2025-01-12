@@ -5,11 +5,8 @@
 #![reexport_test_harness_main = "test_main"]
 
 extern crate alloc;
-
-// use blog_os::int::time::sleep;
 use blog_os::mm::{allocator, memory, memory::BootInfoFrameAllocator};
 use blog_os::println;
-use blog_os::task::simple_task;
 use blog_os::task::{self, Task, executor::Executor};
 use bootloader::{BootInfo, entry_point};
 use core::panic::PanicInfo;
@@ -19,7 +16,7 @@ entry_point!(kernel_main);
 
 /// 内核入口点
 fn kernel_main(boot_info: &'static BootInfo) -> ! {
-    // 初始化
+    // 系统初始化
     blog_os::init();
     blog_os::boot::welcome::show_welcome();
     println!("Hello World{}", "!");
@@ -37,11 +34,13 @@ fn kernel_main(boot_info: &'static BootInfo) -> ! {
 
     // 初始化任务
     let mut executor = Executor::new();
-    executor.spawn(Task::new(task::keyboard::print_keypresses()));
+    executor.spawn(Task::new(
+        task::keyboard::print_keypresses(),
+        task::Priority::High,
+    ));
     executor.run();
 }
 
-/// 当 panic 时调用
 #[cfg(not(test))]
 #[panic_handler]
 fn panic(info: &PanicInfo) -> ! {

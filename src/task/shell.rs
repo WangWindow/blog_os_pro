@@ -1,4 +1,4 @@
-use super::BUFFER_WIDTH;
+use super::{BUFFER_WIDTH, Priority};
 use crate::io::vga_buffer::WRITER;
 use crate::{print, println, task, time};
 use alloc::{string::String, vec::Vec};
@@ -72,27 +72,16 @@ impl Shell {
     /// 重绘当前行
     fn redraw_line(&self) {
         let mut writer = WRITER.lock();
-        let row = writer.get_row();
         writer.set_column(0);
-
-        // 清除当前行
         for _ in 0..BUFFER_WIDTH {
             write!(writer, " ").unwrap();
         }
         writer.set_column(0);
-
-        // 重绘提示符和输入内容
         write!(writer, "{}{}", self.prompt, self.input_buffer).unwrap();
-
-        // 计算并设置光标位置
         let prompt_len = self.prompt.len();
         let cursor_column = prompt_len + self.cursor_position;
         writer.set_column(cursor_column);
-
-        // 在光标位置显示空格
         write!(writer, " ").unwrap();
-
-        // 恢复光标位置
         writer.set_column(cursor_column);
     }
 
@@ -108,9 +97,13 @@ impl Shell {
             "help" => self.cmd_help(),
             "echo" => self.cmd_echo(&args[1..]),
             "clear" => self.cmd_clear(),
+            "add" => self.cmd_add(&args[1..]),
             "run" => {
                 let mut executor = task::executor::Executor::new();
-                executor.spawn(task::Task::new(task::simple_task::print_task()));
+                executor.spawn(task::Task::new(
+                    task::user_task::print_task(),
+                    Priority::Normal,
+                ));
                 executor.run();
             }
             // "cat" => self.cmd_cat(&args[1..]),
@@ -147,6 +140,9 @@ impl Shell {
             println!();
         }
     }
+
+    /// 添加任务到任务队列
+    fn cmd_add(&self, args: &[&str]) {}
 
     // /// 打印给定名称的文件的内容
     // fn cmd_cat(&self, args: &[&str]) {
