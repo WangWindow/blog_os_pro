@@ -1,4 +1,5 @@
 use super::Locked;
+use crate::println;
 use alloc::alloc::{GlobalAlloc, Layout};
 use core::{
     mem,
@@ -40,9 +41,6 @@ impl FixedSizeBlockAllocator {
     }
 
     /// 使用给定的堆边界初始化分配器
-    ///
-    /// 此函数是不安全的，因为调用者必须保证给定的堆边界是有效的，并且堆未使用
-    /// 此方法只能调用一次
     pub unsafe fn init(&mut self, heap_start: usize, heap_size: usize) {
         self.fallback_allocator.init(heap_start, heap_size);
     }
@@ -53,6 +51,37 @@ impl FixedSizeBlockAllocator {
             Ok(ptr) => ptr.as_ptr(),
             Err(_) => ptr::null_mut(),
         }
+    }
+
+    /// 打印所有空闲区域的信息
+    pub unsafe fn print_free_regions(&mut self) {
+        println!("Fixed-Size Block Allocator Status:");
+
+        let mut total_blocks = 0;
+        let mut total_memory = 0;
+
+        // 遍历所有块大小
+        for (i, &size) in BLOCK_SIZES.iter().enumerate() {
+            let mut count = 0;
+            let mut current = self.list_heads[i].as_deref_mut();
+
+            // 计算每个大小的空闲块数量
+            while let Some(node) = current {
+                count += 1;
+                current = node.next.as_deref_mut();
+            }
+
+            // 打印每个大小的统计信息
+            println!("  Size {} bytes: {} free blocks", size, count);
+            total_blocks += count;
+            total_memory += count * size;
+        }
+
+        // 打印总体统计信息
+        println!(
+            "  Total: {} free blocks, {} bytes free",
+            total_blocks, total_memory
+        );
     }
 }
 

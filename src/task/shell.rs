@@ -1,8 +1,10 @@
 use super::{BUFFER_WIDTH, EXECUTOR, Priority};
-use crate::io::vga_buffer::WRITER;
-use crate::{print, println, task};
+use crate::{io::vga_buffer::WRITER, mm::allocator::ALLOCATOR, print, println, task};
 use alloc::{string::String, vec::Vec};
-use core::fmt::Write;
+use core::{
+    alloc::{GlobalAlloc, Layout},
+    fmt::Write,
+};
 use pc_keyboard::{DecodedKey, KeyCode};
 
 /// Shell 结构体
@@ -123,7 +125,9 @@ impl Shell {
             "clear" => self.cmd_clear(),
             "add" => self.cmd_add(&args[1..]),
             "run" => self.cmd_run(),
-            "mem" => self.cmd_mem(),
+            "mem" => self.cmd_mem(&args[1..]),
+            "ls" => self.cmd_ls(&args[1..]),
+            "cat" => self.cmd_cat(&args[1..]),
             _ => println!("Unknown command: {}", args[0]),
         }
     }
@@ -133,11 +137,13 @@ impl Shell {
         println!("------------------------------------");
         println!("| Available commands:");
         println!("| - help: Print this help message");
-        println!("| - echo <string>: Print the string to the screen");
+        println!("| - echo [string]: Print the string to the screen");
         println!("| - clear: Clear the screen");
         println!("| - add <task name> <priority>: Add a new task to the task queue");
         println!("| - run: Run the task queue");
-        println!("| - mem <opteration> [<a num>]: Operate the memory");
+        println!("| - mem <operation> [args...]: Perform a memory operation");
+        println!("| - ls [path]: List files in the given path");
+        println!("| - cat <file>: Print the content of the file");
         println!("------------------------------------");
     }
 
@@ -199,7 +205,74 @@ impl Shell {
     }
 
     /// 运行内存管理
-    fn cmd_mem(&self) {}
+    fn cmd_mem(&self, args: &[&str]) {
+        if args.is_empty() {
+            println!("Usage: mem <operation> [args...]");
+            println!("Operations:");
+            println!("  alloc <size> - Allocate memory");
+            println!("  dealloc <ptr> - Deallocate memory");
+            println!("  status - Show memory status");
+            return;
+        }
+
+        match args[0] {
+            "alloc" => {
+                if args.len() != 2 {
+                    println!("Usage: mem alloc <size>");
+                    return;
+                }
+
+                if let Ok(size) = args[1].parse::<usize>() {
+                    unsafe {
+                        let layout = Layout::from_size_align(size, 8).unwrap();
+                        let ptr = ALLOCATOR.alloc(layout);
+                        if !ptr.is_null() {
+                            println!("Allocated {} bytes at: {:p}", size, ptr);
+                        } else {
+                            println!("Failed to allocate {} bytes", size);
+                        }
+                    }
+                } else {
+                    println!("Invalid size: {}", args[1]);
+                }
+            }
+            "dealloc" => {
+                if args.len() != 2 {
+                    println!("Usage: mem dealloc <ptr>");
+                    return;
+                }
+
+                if let Ok(ptr_val) = usize::from_str_radix(args[1].trim_start_matches("0x"), 16) {
+                    unsafe {
+                        let ptr = ptr_val as *mut u8;
+                        let layout = Layout::from_size_align(8, 8).unwrap();
+                        ALLOCATOR.dealloc(ptr, layout);
+                        println!("Deallocated memory at: {:p}", ptr);
+                    }
+                } else {
+                    println!("Invalid pointer: {}", args[1]);
+                }
+            }
+            "status" => unsafe {
+                ALLOCATOR.lock().print_free_regions();
+            },
+            _ => println!("Unknown operation: {}", args[0]),
+        }
+    }
+
+    /// 列出文件
+    fn cmd_ls(&self, args: &[&str]) {
+        println!("Implement ls command");
+    }
+
+    /// 打印文件内容
+    fn cmd_cat(&self, args: &[&str]) {
+        if args.is_empty() {
+            println!("Usage: cat <file>");
+            return;
+        }
+        println!("Implement cat command");
+    }
 
     /// 重绘当前行
     fn redraw_line(&self) {
