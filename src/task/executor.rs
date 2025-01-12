@@ -128,25 +128,6 @@ impl TaskWaker {
         }
     }
 }
-// struct TaskWaker {
-//     task_id: TaskId,                     // 需要唤醒的任务 ID
-//     task_queue: Arc<ArrayQueue<TaskId>>, // 共享的任务队列，用于重新调度任务
-// }
-
-// impl TaskWaker {
-//     /// 创建一个新的 Waker 实例，用于特定的任务。
-//     fn new(task_id: TaskId, task_queue: Arc<ArrayQueue<TaskId>>) -> Waker {
-//         Waker::from(Arc::new(TaskWaker {
-//             task_id,
-//             task_queue,
-//         }))
-//     }
-
-//     /// 将任务 ID 推回到任务队列中，以便下一轮调度
-//     fn wake_task(&self) {
-//         self.task_queue.push(self.task_id).expect("task_queue full");
-//     }
-// }
 
 impl Wake for TaskWaker {
     /// 唤醒任务，将其 ID 推入任务队列中

@@ -1,6 +1,6 @@
-use super::{BUFFER_WIDTH, EXECUTOR, Priority, executor};
+use super::{BUFFER_WIDTH, EXECUTOR, Priority};
 use crate::io::vga_buffer::WRITER;
-use crate::{print, println, task, time};
+use crate::{print, println, task};
 use alloc::{string::String, vec::Vec};
 use core::fmt::Write;
 use pc_keyboard::{DecodedKey, KeyCode};
@@ -123,6 +123,7 @@ impl Shell {
             "clear" => self.cmd_clear(),
             "add" => self.cmd_add(&args[1..]),
             "run" => self.cmd_run(),
+            "mem" => self.cmd_mem(),
             _ => println!("Unknown command: {}", args[0]),
         }
     }
@@ -136,6 +137,7 @@ impl Shell {
         println!("| - clear: Clear the screen");
         println!("| - add <task name> <priority>: Add a new task to the task queue");
         println!("| - run: Run the task queue");
+        println!("| - mem <opteration> [<a num>]: Operate the memory");
         println!("------------------------------------");
     }
 
@@ -195,6 +197,9 @@ impl Shell {
         let mut executor = EXECUTOR.lock();
         executor.run();
     }
+
+    /// 运行内存管理
+    fn cmd_mem(&self) {}
 
     /// 重绘当前行
     fn redraw_line(&self) {

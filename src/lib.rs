@@ -11,8 +11,8 @@ use irq::time;
 
 pub mod boot;
 pub mod fs;
-pub mod irq;
 pub mod io;
+pub mod irq;
 pub mod mm;
 pub mod task;
 

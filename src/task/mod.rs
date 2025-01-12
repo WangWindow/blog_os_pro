@@ -6,7 +6,6 @@ use core::{
     task::{Context, Poll},
 };
 use executor::Executor;
-use keyboard::shell_task;
 use lazy_static::lazy_static;
 use spin::Mutex;
 
