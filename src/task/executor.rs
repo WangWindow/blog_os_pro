@@ -1,4 +1,4 @@
-use super::{CURRENT_PRIORITY, CURRENT_TASK, PRIORITY_NUM, Priority, Task, TaskId};
+use super::{CURRENT_PRIORITY, PRIORITY_NUM, Priority, Task, TaskId};
 use alloc::{collections::BTreeMap, sync::Arc, task::Wake};
 use core::{
     sync::atomic::Ordering,

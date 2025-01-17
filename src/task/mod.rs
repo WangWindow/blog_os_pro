@@ -10,7 +10,6 @@ use lazy_static::lazy_static;
 use spin::Mutex;
 
 // 追踪当前执行的任务
-static CURRENT_TASK: AtomicUsize = AtomicUsize::new(0);
 static CURRENT_PRIORITY: AtomicUsize = AtomicUsize::new(0);
 
 lazy_static! {

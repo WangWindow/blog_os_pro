@@ -23,7 +23,7 @@ pub async fn timed_print_task(time: u64) {
 /// 一个有限时间的任务
 pub async fn limited_time_task(time: u64) {
     let mut i = 0;
-    while (i < time) {
+    while i < time {
         println!("limited_time_task: {}", i);
         i += 1;
         time::sleep(1);

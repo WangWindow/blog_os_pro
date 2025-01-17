@@ -5,14 +5,10 @@
 #![reexport_test_harness_main = "test_main"]
 
 extern crate alloc;
-use alloc::{
-    alloc::{GlobalAlloc, Layout},
-    vec::Vec,
-};
 use blog_os::{
-    mm::{allocator, allocator::ALLOCATOR, memory, memory::BootInfoFrameAllocator},
+    mm::{allocator, memory, memory::BootInfoFrameAllocator},
     println,
-    task::{self, EXECUTOR, Task, executor},
+    task::{self, EXECUTOR, Task},
 };
 use bootloader::{BootInfo, entry_point};
 use core::panic::PanicInfo;
