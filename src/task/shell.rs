@@ -1,6 +1,6 @@
 use super::{BUFFER_WIDTH, EXECUTOR, Priority};
-use crate::{io::vga_buffer::WRITER, mm::allocator::ALLOCATOR, print, println, task};
-use alloc::{string::String, vec::Vec};
+use crate::{io::vga_buffer::WRITER, mm::allocator::ALLOCATOR, print, println, task, time};
+use alloc::{string::String, string::ToString, vec::Vec};
 use core::{
     alloc::{GlobalAlloc, Layout},
     fmt::Write,
@@ -79,6 +79,9 @@ impl Shell {
                 _ => {}
             },
             DecodedKey::Unicode(c) => match c {
+                '\t' => {
+                    self.complete_command();
+                }
                 '\n' => {
                     if !self.input_buffer.trim().is_empty() {
                         self.history.push(self.input_buffer.clone());
@@ -130,11 +133,28 @@ impl Shell {
             "mem" => self.cmd_mem(&args[1..]),
             "ls" => self.cmd_ls(&args[1..]),
             "cat" => self.cmd_cat(&args[1..]),
+            "history" => self.cmd_history(),
+            "pwd" => self.cmd_pwd(),
+            "date" => self.cmd_date(),
+            "version" => self.cmd_version(),
             _ => println!("Unknown command: {}", args[0]),
         }
     }
 
     /// 打印帮助信息
+    // fn cmd_help(&self) {
+    //     println!("------------------------------------");
+    //     println!("| Available commands:");
+    //     println!("| - help: Print this help message");
+    //     println!("| - echo [string]: Print the string to the screen");
+    //     println!("| - clear: Clear the screen");
+    //     println!("| - add <task name> <priority>: Add a new task to the task queue");
+    //     println!("| - run: Run the task queue");
+    //     println!("| - mem <operation> [args...]: Perform a memory operation");
+    //     println!("| - ls [path]: List files in the given path");
+    //     println!("| - cat <file>: Print the content of the file");
+    //     println!("------------------------------------");
+    // }
     fn cmd_help(&self) {
         println!("------------------------------------");
         println!("| Available commands:");
@@ -146,6 +166,14 @@ impl Shell {
         println!("| - mem <operation> [args...]: Perform a memory operation");
         println!("| - ls [path]: List files in the given path");
         println!("| - cat <file>: Print the content of the file");
+        println!("| - pwd: Print current working directory");
+        println!("| - date: Display system time");
+        println!("| - version: Show system version");
+        println!("| - history: Show command history");
+        println!("------------------------------------");
+        println!("| Tips:");
+        println!("| - Use Tab for command completion");
+        println!("| - Use Up/Down arrows for history");
         println!("------------------------------------");
     }
 
@@ -279,6 +307,72 @@ impl Shell {
             return;
         }
         println!("Implement cat command");
+    }
+
+    /// 显示命令历史
+    fn cmd_history(&self) {
+        for (i, cmd) in self.history.iter().enumerate() {
+            println!("{:3} {}", i, cmd);
+        }
+    }
+
+    /// 显示当前目录
+    fn cmd_pwd(&self) {
+        println!("/"); // 简化实现,始终显示根目录
+    }
+
+    /// 显示系统时间
+    fn cmd_date(&self) {
+        let millis = time::current_time_millis();
+        let seconds = millis / 1000;
+        let minutes = seconds / 60;
+        let hours = minutes / 60;
+        println!(
+            "System time: {:02}:{:02}:{:02}",
+            hours % 24,
+            minutes % 60,
+            seconds % 60
+        );
+    }
+
+    /// 显示系统版本
+    fn cmd_version(&self) {
+        println!("BlogOS v0.1.0");
+        println!("Kernel: Rust 1.75.0");
+        println!("Architecture: x86_64");
+    }
+
+    /// 命令补全
+    fn complete_command(&mut self) {
+        let input = self.input_buffer.as_str();
+        let commands = [
+            "help", "echo", "clear", "exit", "history", "pwd", "date", "version", "ls", "cat",
+        ];
+
+        let matches: Vec<&str> = commands
+            .iter()
+            .filter(|&cmd| cmd.starts_with(input))
+            .copied()
+            .collect();
+
+        match matches.len() {
+            0 => (), // 无匹配
+            1 => {
+                // 单一匹配,直接补全
+                self.input_buffer = matches[0].to_string();
+                self.cursor_position = self.input_buffer.len();
+                self.redraw_line();
+            }
+            _ => {
+                // 多个匹配,显示所有可能
+                println!("\nPossible commands:");
+                for cmd in matches {
+                    print!("{} ", cmd);
+                }
+                println!("\n");
+                self.redraw_line();
+            }
+        }
     }
 
     /// 重绘当前行
